@@ -83,8 +83,7 @@ In a quick overview the following R libraries and versions (**although any versi
 First install conda (anaconda) environment in your computer and then you can use the commands **in a bash-terminal** after the list of libraries.
 
 **Important Note:**
-* **Pytorch GPU installation CHANGES according to your NVIDIA GPU and cuda version. Check the [pytorch installation guide](https://pytorch.org/get-started/locally/) here for more information.**
-* **This installation was performed in a WINDOWS enviroment. For other environments check libraries' documentation** 
+**This installation was performed in a WINDOWS enviroment. For other environments check libraries' documentation** 
 
 In a quick overview the following Python libraries and versions (**although different versions are POSSIBLY also appropriate**) were/are used:
 1. [python](https://www.python.org/downloads/) 3.8.8
