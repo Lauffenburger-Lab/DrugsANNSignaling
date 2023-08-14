@@ -1,6 +1,6 @@
 # Inference of the effects of drugs on cell signaling using machine learning
 Github repository of the study:
-> Autoencoder Model for Translating Omics Signatures <br>
+> Inference of the effects of drugs on cell signaling using machine learning <br>
 > Nikolaos Meimetis<sup>1</sup>, Douglas A. Lauffenburger<sup>1</sup>, Avlant Nilsson<sup>1,2,3*</sup>
 > 1) Department of Biological Engineering, Massachusetts Institute of Technology, Cambridge, MA 02139, USA
 > 2) Department of Cell and Molecular Biology, Karolinska Institutet, Stockholm, SE 171 77, Sweden
