@@ -11,3 +11,7 @@ preprocessing/preprocessed_data/TF_activities/TFs_random_variances_all.rds
 preprocessing/preprocessed_data/TF_activities/l1000_allgenes_lvl3_tfs.tsv
 preprocessing/preprocessed_data/TF_activities/Trimmed_l1000_allgenes_lvl3_tfs.tsv
 preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv
+results/vanilla_ensembles/ANN/models/
+results/vanilla_ensembles/GCNN/models/
+results/vanilla/ANN/models/
+results/vanilla/GCNN/models/
