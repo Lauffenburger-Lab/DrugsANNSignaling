@@ -145,7 +145,7 @@ cmap_drugs <- left_join(cmap_drugs %>% unique(),tt) %>% unique()
 cmap_drugs <- cmap_drugs %>% filter(is_exemplar==1) %>% filter(!is.na(sig_id)) %>% unique()
 
 print(nrow(cmap_drugs %>% filter(pert_itime=='6 h') %>% dplyr::select(canonical_smiles) %>% unique()))
-### We have 768 (1106 lvl3 old) unique drugs in 6 hours with different dose and different cell-line ###
+### We have 768 unique drugs in 6 hours with different dose and different cell-line ###
 
 ## Read transcriptomics data------------------
 
