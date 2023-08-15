@@ -17,8 +17,9 @@ Note: In the [CLUE Glossary](https://clue.io/connectopedia/glossary) you can fin
 5. GSE92742_Broad_LINCS_sig_info.txt.gz : Meta-data information about each experiment/sample. Each experiment/sample is identified by a unique sig_id after replicate aggregation.
 6. GSE92742_Broad_LINCS_pert_info.txt.gz : Meta-data information about each perturbation, e.g. the drugs name, SMILE, dose, time, etc.
 7. GSE92742_Broad_LINCS_sig_metrics.txt.gz : Quality metrics' information about each individual experiment.
-8. siRNA description
-9. drug-target interactions
-10. omnipath
-11. dorothea
-12. drugbank
+8. GSE31534: It would be a whole subfolder that is automatically downloaded when retrieving the siRNA data from GEO via R. You can put that folder in this directory.
+9. Repurposing_Hub_export (1).txt : Drug-target interactions in Broad's Repurposing Hub.
+10. omnipath_webservice_interactions__recent.tsv : Recent version of the OmniPath resource, containing protein-protein interactions, curated by multiple sources.
+11. uniprot-reviewed_yes+AND+organism__Homo+sapiens+(Human)+[9606]_.tab : File containing an annotation for individual human proteins and signaling nodes in omnipath.
+12. dorothea.tsv : The Dorothea regulon, containing known regulatory interactions together with confidence levels
+13. full database.xml : DrugBank database downloaded using information from the corresponding website.
