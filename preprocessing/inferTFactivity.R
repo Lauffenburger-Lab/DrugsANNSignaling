@@ -41,7 +41,6 @@ print(all(rownames(TF_activities)==tfs$Gene.names...primary..))
 rownames(TF_activities) <- tfs$Entry
 TF_activities <- t(TF_activities)
 hist(1/(1+exp(-TF_activities)),main='Inferred TF activities',xlab='activity')
-#saveRDS(TF_activities,'tf_enrichment_all_instids_lvl3_l1000.rds')
 TF_activities <- 1/(1+exp(-TF_activities))
 
 ### First filter out TFS with consistently high variance across replicates in the samples 
