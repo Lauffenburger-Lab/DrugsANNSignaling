@@ -15,7 +15,7 @@ library(factoextra)
 # plan(multiprocess,workers = 9)
 
 # Load performance results-----------------
-performance <- read.xlsx('Model/CVL1000_Paper/HyperParamInteractionResults/hyperParamPerformanceResults.xlsx',
+performance <- read.xlsx('../../Model/CVL1000_Paper/HyperParamInteractionResults/hyperParamPerformanceResults.xlsx',
                          sheetIndex = 1)
 performance <- performance %>% filter(!is.na(corr))
 performance <- performance %>% group_by(lambda) %>% mutate(mean_corr=mean(corr)) %>%
@@ -23,10 +23,10 @@ performance <- performance %>% group_by(lambda) %>% mutate(mean_corr=mean(corr))
 #performance <- performance[-c(33,34,35,36,37,38,39,40),]
 
 # Load performance at 0 and inf regularization
-performance_zero <- read.xlsx('Model/CVL1000_Paper/MultipleRuns/modeltype4.xlsx',sheetIndex=1)
+performance_zero <- read.xlsx('../../Model/CVL1000_Paper/MultipleRuns/modeltype4.xlsx',sheetIndex=1)
 performance_zero <- performance_zero %>% mutate(lambda=0) %>% group_by(lambda) %>% mutate(mean_corr=mean(corr)) %>%
   mutate(sd_corr=sd(corr)) %>% ungroup()
-performance_inf <-  read.xlsx('Model/CVL1000_Paper/MultipleRuns/modeltype1.xlsx',sheetIndex=1)
+performance_inf <-  read.xlsx('../../Model/CVL1000_Paper/MultipleRuns/modeltype1.xlsx',sheetIndex=1)
 performance_inf <- performance_inf %>% filter(!is.na(corr))
 performance_inf <- performance_inf %>% mutate(lambda=Inf) %>% group_by(lambda) %>% mutate(mean_corr=mean(corr)) %>%
   mutate(sd_corr=sd(corr)) %>% ungroup()
@@ -38,11 +38,11 @@ performance <- rbind(performance_zero,performance,performance_inf)
 #   dplyr::arrange(group1)
 
 ### Read random performance results
-shuffleX <- read.xlsx('Model/CVL1000_Paper/RandomSuffleX/test/randomShufflePerformance.xlsx',sheetIndex=1)
+shuffleX <- read.xlsx('../../Model/CVL1000_Paper/RandomSuffleX/test/randomShufflePerformance.xlsx',sheetIndex=1)
 shuffleX <- shuffleX %>% select(-no) %>% mutate(lambda = 'shuffle X')
 shuffleX <-shuffleX %>% group_by(lambda) %>% mutate(mean_corr=mean(corr)) %>%
 mutate(sd_corr=sd(corr)) %>% ungroup()
-shuffleY <- read.xlsx('Model/CVL1000_Paper/RandomSuffleY/test/randomShufflePerformance.xlsx',sheetIndex=1)
+shuffleY <- read.xlsx('../../Model/CVL1000_Paper/RandomSuffleY/test/randomShufflePerformance.xlsx',sheetIndex=1)
 shuffleY <- shuffleY %>% select(-no) %>% mutate(lambda = 'shuffle Y')
 shuffleY <-shuffleY %>% group_by(lambda) %>% mutate(mean_corr=mean(corr)) %>%
   mutate(sd_corr=sd(corr)) %>% ungroup()
@@ -72,7 +72,7 @@ print(p1)
 
 
 # Load regularization results
-regularization <- read.xlsx('Model/CVL1000_Paper/HyperParamInteractionResults/hitDiscoveryResults.xlsx',
+regularization <- read.xlsx('../../Model/CVL1000_Paper/HyperParamInteractionResults/hitDiscoveryResults.xlsx',
                             sheetIndex = 1)[,1:13]
 #regularization <- regularization %>% filter(threshold>=5 & threshold<=50)
 #regularization <- regularization %>% filter(lamda>=1e-7 & lamda<=0.001 & lamda!=0.001)
@@ -115,13 +115,13 @@ p2 <- ggplot(regularization %>% group_by(lamda) %>% mutate(meanG=mean(G)) %>%
                                         linewidth=0.25))
 print(p2)
 
-png('regularizationTuning.png',units = 'in',width = 12,height = 12,res = 600)
-p1/p2
-dev.off()
+# png('regularizationTuning.png',units = 'in',width = 12,height = 12,res = 600)
+# p1/p2
+# dev.off()
 
 
 # Compare per TF performance for different levels of regularization---------------
-files <- list.files('Model/CVL1000_Paper/MultipleRuns/test/')
+files <- list.files('../../Model/CVL1000_Paper/MultipleRuns/test/')
 files <- files[grep('.csv',files)]
 files_inf <- files[grep('modeltype1',files)]
 files_inf <- files_inf[which(!grepl('class',files_inf))]
@@ -131,7 +131,7 @@ files_zero <- files_zero[which(!grepl('class',files_zero))]
 files_zero <- files_zero[which(!grepl('quantile',files_zero))]
 files_zero <- files_zero[which(!grepl('R2',files_zero))]
 
-files_reg <-  list.files('Model/CVL1000_Paper/hyperParamTune/test/')
+files_reg <-  list.files('../../Model/CVL1000_Paper/hyperParamTune/test/')
 files_reg <- files_reg[grep('.csv',files_reg)]
 files_reg <- files_reg[which(!grepl('class',files_reg))]
 files_reg <- files_reg[which(!grepl('quantile',files_reg))]
@@ -145,9 +145,9 @@ for (i in 1:length(all_files)){
   for (file in files_var){
     cell <- str_split_fixed(file,'_',4)[1,2]
     if (i==3) {
-      file <- paste0('Model/CVL1000_Paper/hyperParamTune/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/hyperParamTune/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/MultipleRuns/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/MultipleRuns/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -178,9 +178,9 @@ for (i in 1:length(all_files)){
   for (file in files_corr){
     cell <- str_split_fixed(file,'_',4)[1,2]
     if (i==3) {
-      file <- paste0('Model/CVL1000_Paper/hyperParamTune/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/hyperParamTune/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/MultipleRuns/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/MultipleRuns/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -222,9 +222,9 @@ for (i in 1:length(all_files)){
   for (file in files_corr){
     cell <- str_split_fixed(file,'_',4)[1,2]
     if (i==3) {
-      file <- paste0('Model/CVL1000_Paper/hyperParamTune/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/hyperParamTune/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/MultipleRuns/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/MultipleRuns/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -292,7 +292,7 @@ p3 <- p3_1 + p3_2 + plot_annotation(title = 'Average per TF pearson`s correlatio
                                     theme = theme(plot.title =element_text(family='Arial',hjust = 0.5,size=24)))
 print(p3)
 # df_corr_val <- df_corr_val %>% select(-TF,-r) %>% unique()
-ggsave('averagePerTFPear_vs_regularization.eps',
+ggsave('../article_supplementary_info/figure1E.eps',
        plot = p3,
        device = cairo_ps,
        scale = 1,
@@ -314,9 +314,9 @@ p4 <- ggscatter(df_corr_all, x = 'r.x', y ='r.y',
   theme(text = element_text(size=13),plot.title = element_text(hjust = 0.5)) +
   xlab('per TF pearson`s r in train') + ylab('per TF pearson`s r in validation')
 print(p4)
-png('performance_train_vs_validation.png',units = 'in',width = 12,height = 12,res = 600)
-print(p4)
-dev.off()
+# png('performance_train_vs_validation.png',units = 'in',width = 12,height = 12,res = 600)
+# print(p4)
+# dev.off()
 
 df <- left_join(df_var,
                 all_corr_train %>% gather('TF','r',-lamda,-cell),
@@ -331,9 +331,9 @@ p5 <- ggscatter(df, x = 'std', y ='r',
   theme(text = element_text(size=13),plot.title = element_text(hjust = 0.5)) +
   xlab('per TF std in train') + ylab('per TF pearson`s r in train')
 print(p5)
-png('performance_train_vs_std.png',units = 'in',width = 12,height = 12,res = 600)
-print(p5)
-dev.off()
+# png('performance_train_vs_std.png',units = 'in',width = 12,height = 12,res = 600)
+# print(p5)
+# dev.off()
 
 ### Find median rank cut-off to include versus train correlation
 df_corr_train <- all_corr_train %>% gather('TF','r',-lamda,-cell)
@@ -403,14 +403,14 @@ print(p8)
 
 ### Visualize based on filtering
 # Add random shuffle
-random_files <- list.files('Model/CVL1000_Paper/RandomSuffleY/test/')
+random_files <- list.files('../../Model/CVL1000_Paper/RandomSuffleY/test/')
 random_files <- random_files[grep('.csv',random_files)]
 random_files <- random_files[grep('modeltype4',random_files)]
 random_filesY <- random_files[grep('Performance',random_files)]
 random_filesY <- random_filesY[which(!grepl('class',random_filesY))]
 random_filesY <- random_filesY[which(!grepl('quantile',random_filesY))]
 random_filesY <- random_filesY[which(!grepl('R2',random_filesY))]
-random_files <- list.files('Model/CVL1000_Paper/RandomSuffleX/test/')
+random_files <- list.files('../../Model/CVL1000_Paper/RandomSuffleX/test/')
 random_files <- random_files[grep('.csv',random_files)]
 random_files <- random_files[grep('modeltype4',random_files)]
 random_filesX <- random_files[grep('Performance',random_files)]
@@ -424,9 +424,9 @@ for (i in 1:length(all_random_files)){
   for (file in files_corr){
     cell <- str_split_fixed(file,'_',4)[1,2]
     if (i==1) {
-      file <- paste0('Model/CVL1000_Paper/RandomSuffleX/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/RandomSuffleX/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/RandomSuffleY/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/RandomSuffleY/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -445,9 +445,9 @@ for (i in 1:length(all_random_files)){
   for (file in files_corr){
     cell <- str_split_fixed(file,'_',4)[1,2]
     if (i==1) {
-      file <- paste0('Model/CVL1000_Paper/RandomSuffleX/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/RandomSuffleX/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/RandomSuffleY/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/RandomSuffleY/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -527,13 +527,13 @@ p3_2 <- p3 + stat_compare_means(comparisons = list(c('1e-04','0.005'),
 print(p3_2)
 
 
-png('regularization_vs_filteredTFPerformance.png',units = 'in',width = 16,height = 12,res = 600)
+# png('regularization_vs_filteredTFPerformance.png',units = 'in',width = 16,height = 12,res = 600)
 p3_1 + p3_2
-dev.off()
+# dev.off()
 
 # Load sensitivity results------------------------
 regs <- c(1e-08, 1e-07, 1e-06, 1e-05, 1e-04, 1e-03, 5e-03, 1e-02, 5e-02)
-path <- 'Model/CVL1000_Paper/hyperParamSensitivity/'
+path <- '../../Model/CVL1000_Paper/hyperParamSensitivity/'
 files <- list.files(path)
 files <- data.frame(files)
 files <- files %>% mutate(type=grepl('.csv',files)) %>% filter(type==T)
@@ -573,7 +573,7 @@ p3 <- ggplot(sensitivity,aes(x=`noise level`,y=`average pearson correlation`)) +
   theme(text = element_text(size=13),plot.title = element_text(hjust = 0.5))
 print(p3)
 
-png('NoiseSensitivity4.png',units = 'in',width = 9,height = 9,res = 600)
+png('../article_supplementary_info/suppl_figure12a.png',units = 'in',width = 9,height = 9,res = 600)
 print(p3)
 dev.off()
 
@@ -598,7 +598,7 @@ p4 <- ggplot(sensitivityFocused,aes(x=as.numeric(as.character(lambda)),y=`averag
   theme(text = element_text(size=13),plot.title = element_text(hjust = 0.5))
 print(p4)
 
-png('NoiseSensitivity.png',units = 'in',width = 12,height = 9,res = 600)
+png('../article_supplementary_info/suppl_figure12.png',units = 'in',width = 12,height = 9,res = 600)
 p3/p4
 dev.off()
 
@@ -606,8 +606,8 @@ dev.off()
 # Correctly classifying inhibition/activation---------
 
 ## Calculate the probability of observing randomly an inhibited or activated TF in our data in each cell-line
-TFoutput <- read.delim('Model/data/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv') %>% column_to_rownames('X')
-cellInput <- read.delim('Model/data/L1000_lvl3-conditions_cells.tsv') %>% column_to_rownames('X')
+TFoutput <- read.delim('../../Model/data/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv') %>% column_to_rownames('X')
+cellInput <- read.delim('../../Model/data/L1000_lvl3-conditions_cells.tsv') %>% column_to_rownames('X')
 TFoutput <- TFoutput[which(rownames(TFoutput) %in% rownames(cellInput)),]
 gc()
 inh <- sum(TFoutput<=0.25)/(nrow(TFoutput)*ncol(TFoutput))
@@ -654,12 +654,12 @@ for (j in 1:ncol(cellInput)){
   print(paste0('Finished cell ',colnames(cellInput)[j]))
 }
 #df_null <- data.frame(prec_inh_null,prec_mid_null,prec_act_null,f1_null,mcc_null)
-#saveRDS(df_null,'Model/CVL1000_Paper/random_classification_performance.rds')
+#saveRDS(df_null,'../../Model/CVL1000_Paper/random_classification_performance.rds')
 # Read saved simulations
 df_null <- data.frame()
 for (j in 1:ncol(cellInput)){
   df_null <- rbind(df_null,
-                   readRDS(paste0('Model/CVL1000_Paper/random_classification_performance_',
+                   readRDS(paste0('../../Model/CVL1000_Paper/random_classification_performance_',
                                   colnames(cellInput)[j],
                                   '.rds')) %>% mutate(cell=colnames(cellInput)[j]))
 }
@@ -672,19 +672,19 @@ df_null <- df_null %>% gather('metric','value',-cell)
 p <- ggplot(df_null,aes(x=value,fill=cell)) + geom_histogram(color='black',alpha=0.8,bins = 50) + facet_wrap(~metric,scales = 'free')+
   ggtitle('Performance in randomly classifying correctly activation/inhibition') + theme(plot.title = element_text(hjust = 0.5))
 print(p)
-png('random_classification_performance.png',units = 'in',width = 12,height = 9,res=600)
+png('../article_supplementary_info/random_classification_performance.png',units = 'in',width = 12,height = 9,res=600)
 print(p)
 dev.off()
 df_null <- df_null %>% group_by(metric,cell) %>% mutate(value=mean(value)) %>% ungroup() %>% unique()
 
 
 ### Read performance files
-files <- list.files('Model/CVL1000_Paper/MultipleRuns/test/')
+files <- list.files('../../Model/CVL1000_Paper/MultipleRuns/test/')
 files <- files[grep('.csv',files)]
 files <- files[grep('class',files)]
 files_inf <- files[grep('modeltype1',files)]
 files_zero <- files[grep('modeltype4',files)]
-files_reg <-  list.files('Model/CVL1000_Paper/hyperParamTune/test/')
+files_reg <-  list.files('../../Model/CVL1000_Paper/hyperParamTune/test/')
 files_reg <- files_reg[grep('.csv',files_reg)]
 files_reg <- files_reg[grep('class',files_reg)]
 all_files  <- list(files_inf,files_zero,files_reg)
@@ -697,9 +697,9 @@ for (i in 1:length(all_files)){
   for (file in files_class){
     cell <- str_split_fixed(file,'_',3)[1,2]
     if (i==3) {
-      file <- paste0('Model/CVL1000_Paper/hyperParamTune/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/hyperParamTune/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/MultipleRuns/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/MultipleRuns/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -722,9 +722,9 @@ for (i in 1:length(all_files)){
   for (file in files_class){
     cell <- str_split_fixed(file,'_',3)[1,2]
     if (i==3) {
-      file <- paste0('Model/CVL1000_Paper/hyperParamTune/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/hyperParamTune/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/MultipleRuns/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/MultipleRuns/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -741,12 +741,12 @@ for (i in 1:length(all_files)){
 }
 
 # Add random shuffle
-random_files <- list.files('Model/CVL1000_Paper/RandomSuffleY/test/')
+random_files <- list.files('../../Model/CVL1000_Paper/RandomSuffleY/test/')
 random_files <- random_files[grep('.csv',random_files)]
 random_files <- random_files[grep('class',random_files)]
 random_files <- random_files[grep('modeltype4',random_files)]
 random_filesY <- random_files[grep('Performance',random_files)]
-random_files <- list.files('Model/CVL1000_Paper/RandomSuffleX/test/')
+random_files <- list.files('../../Model/CVL1000_Paper/RandomSuffleX/test/')
 random_files <- random_files[grep('.csv',random_files)]
 random_files <- random_files[grep('class',random_files)]
 random_files <- random_files[grep('modeltype4',random_files)]
@@ -758,9 +758,9 @@ for (i in 1:length(all_random_files)){
   for (file in files_class){
     cell <- str_split_fixed(file,'_',3)[1,2]
     if (i==1) {
-      file <- paste0('Model/CVL1000_Paper/RandomSuffleX/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/RandomSuffleX/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/RandomSuffleY/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/RandomSuffleY/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -779,9 +779,9 @@ for (i in 1:length(all_random_files)){
   for (file in files_class){
     cell <- str_split_fixed(file,'_',3)[1,2]
     if (i==1) {
-      file <- paste0('Model/CVL1000_Paper/RandomSuffleX/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/RandomSuffleX/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/RandomSuffleY/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/RandomSuffleY/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -841,13 +841,13 @@ p3_2 <- p3 + stat_compare_means(comparisons = list(c('0','Inf'),
                                 tip.length=0.05) 
 print(p3_2)
 
-png('regularization_vs_classification.png',units = 'in',width = 18,height = 18,res = 600)
+png('../article_supplementary_info/regularization_vs_classification.png',units = 'in',width = 18,height = 18,res = 600)
 p3_1 / p3_2
 dev.off()
 
 
 # Performance in the first PCs--------------------------
-files <- list.files('Model/CVL1000_Paper/MultipleRuns/test/')
+files <- list.files('../../Model/CVL1000_Paper/MultipleRuns/test/')
 files <- files[grep('.csv',files)]
 files_inf <- files[grep('modeltype1',files)]
 files_inf <- files_inf[which(!grepl('class',files_inf))]
@@ -856,7 +856,7 @@ files_zero <- files[grep('modeltype4',files)]
 files_zero <- files_zero[which(!grepl('class',files_zero))]
 files_zero <- files_zero[which(!grepl('quantile',files_zero))]
 files_zero <- files_zero[which(!grepl('R2',files_zero))]
-files_reg <-  list.files('Model/CVL1000_Paper/hyperParamTune/test/')
+files_reg <-  list.files('../../Model/CVL1000_Paper/hyperParamTune/test/')
 files_reg <- files_reg[grep('.csv',files_reg)]
 files_reg <- files_reg[which(!grepl('class',files_reg))]
 files_reg <- files_reg[which(!grepl('quantile',files_reg))]
@@ -868,9 +868,9 @@ for (i in 1:length(all_files)){
   for (file in files_corr){
     cell <- str_split_fixed(file,'_',4)[1,2]
     if (i==3) {
-      file <- paste0('Model/CVL1000_Paper/hyperParamTune/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/hyperParamTune/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/MultipleRuns/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/MultipleRuns/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -892,9 +892,9 @@ for (i in 1:length(all_files)){
   for (file in files_corr){
     cell <- str_split_fixed(file,'_',4)[1,2]
     if (i==3) {
-      file <- paste0('Model/CVL1000_Paper/hyperParamTune/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/hyperParamTune/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/MultipleRuns/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/MultipleRuns/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -910,14 +910,14 @@ for (i in 1:length(all_files)){
   }
 }
 # Add random shuffle
-random_files <- list.files('Model/CVL1000_Paper/RandomSuffleY/test/')
+random_files <- list.files('../../Model/CVL1000_Paper/RandomSuffleY/test/')
 random_files <- random_files[grep('.csv',random_files)]
 random_files <- random_files[grep('modeltype4',random_files)]
 random_filesY <- random_files[grep('Performance',random_files)]
 random_filesY <- random_filesY[which(!grepl('class',random_filesY))]
 random_filesY <- random_filesY[which(!grepl('quantile',random_filesY))]
 random_filesY <- random_filesY[which(!grepl('R2',random_filesY))]
-random_files <- list.files('Model/CVL1000_Paper/RandomSuffleX/test/')
+random_files <- list.files('../../Model/CVL1000_Paper/RandomSuffleX/test/')
 random_files <- random_files[grep('.csv',random_files)]
 random_files <- random_files[grep('modeltype4',random_files)]
 random_filesX <- random_files[grep('Performance',random_files)]
@@ -931,9 +931,9 @@ for (i in 1:length(all_random_files)){
   for (file in files_corr){
     cell <- str_split_fixed(file,'_',4)[1,2]
     if (i==1) {
-      file <- paste0('Model/CVL1000_Paper/RandomSuffleX/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/RandomSuffleX/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/RandomSuffleY/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/RandomSuffleY/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -952,9 +952,9 @@ for (i in 1:length(all_random_files)){
   for (file in files_corr){
     cell <- str_split_fixed(file,'_',4)[1,2]
     if (i==1) {
-      file <- paste0('Model/CVL1000_Paper/RandomSuffleX/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/RandomSuffleX/test/',file)
     }else{
-      file <- paste0('Model/CVL1000_Paper/RandomSuffleY/test/',file)
+      file <- paste0('../../Model/CVL1000_Paper/RandomSuffleY/test/',file)
     }
     tmp <- data.table::fread(file)
     colnames(tmp)[1] <- 'lamda'
@@ -968,8 +968,8 @@ for (i in 1:length(all_random_files)){
   }
 }
 # Find PCs per cell-line and global PCA
-TFoutput <- read.delim('Model/data/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv') %>% column_to_rownames('X')
-cellInput <- read.delim('Model/data/L1000_lvl3-conditions_cells.tsv') %>% column_to_rownames('X')
+TFoutput <- read.delim('../../Model/data/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv') %>% column_to_rownames('X')
+cellInput <- read.delim('../../Model/data/L1000_lvl3-conditions_cells.tsv') %>% column_to_rownames('X')
 TFoutput <- TFoutput[which(rownames(TFoutput) %in% rownames(cellInput)),]
 gc()
 pca_all <- prcomp(TFoutput)
@@ -1142,207 +1142,3 @@ print(p3_2)
 png('cellLine_pca_filtered_perTF_performance.png',units = 'in',width = 12,height = 12,res=600)
 print(p3_1/p3_2)
 dev.off()
-
-# # Binned performance-------------
-# # Add random shuffle
-# random_files <- list.files('Model/CVL1000_Paper/RandomSuffleY/test/')
-# random_files <- random_files[grep('.csv',random_files)]
-# random_files <- random_files[grep('modeltype4',random_files)]
-# random_files <- random_files[grep('quantile',random_files)]
-# random_filesY <- random_files[grep('Performance',random_files)]
-# random_files <- list.files('Model/CVL1000_Paper/RandomSuffleX/test/')
-# random_files <- random_files[grep('.csv',random_files)]
-# random_files <- random_files[grep('modeltype4',random_files)]
-# random_files <- random_files[grep('quantile',random_files)]
-# random_filesX <- random_files[grep('Performance',random_files)]
-# all_random_files <- list(random_filesX,random_filesY)
-# all_corr_random_val <- data.frame()
-# for (i in 1:length(all_random_files)){
-#   files_corr <- all_random_files[[i]][grep('ValidationPerformance',all_random_files[[i]])]
-#   for (file in files_corr){
-#     cell <- str_split_fixed(file,'_',4)[1,2]
-#     if (i==1) {
-#       file <- paste0('Model/CVL1000_Paper/RandomSuffleX/test/',file)
-#     }else{
-#       file <- paste0('Model/CVL1000_Paper/RandomSuffleY/test/',file)
-#     }
-#     tmp <- data.table::fread(file)
-#     colnames(tmp)[1] <- 'TF'
-#     if (i==1){
-#       tmp <- tmp %>% mutate(lamda = 'shuffleX')
-#     }else{
-#       tmp <- tmp %>% mutate(lamda = 'shuffleY')
-#     }
-#     tmp <- tmp %>% mutate(cell=cell)
-#     all_corr_random_val <- rbind(all_corr_random_val,tmp)
-#   }
-# }
-# all_corr_random_train <- data.frame()
-# for (i in 1:length(all_random_files)){
-#   files_corr <- all_random_files[[i]][grep('TrainPerformance',all_random_files[[i]])]
-#   for (file in files_corr){
-#     cell <- str_split_fixed(file,'_',4)[1,2]
-#     if (i==1) {
-#       file <- paste0('Model/CVL1000_Paper/RandomSuffleX/test/',file)
-#     }else{
-#       file <- paste0('Model/CVL1000_Paper/RandomSuffleY/test/',file)
-#     }
-#     tmp <- data.table::fread(file)
-#     colnames(tmp)[1] <- 'TF'
-#     if (i==1){
-#       tmp <- tmp %>% mutate(lamda ='shuffleX')
-#     }else{
-#       tmp <- tmp %>% mutate(lamda = 'shuffleY')
-#     }
-#     tmp <- tmp %>% mutate(cell=cell)
-#     all_corr_random_train <- rbind(all_corr_random_train,tmp)
-#   }
-# }
-# 
-# ### Load other data
-# files <- list.files('Model/CVL1000_Paper/MultipleRuns/test/')
-# files <- files[grep('.csv',files)]
-# files_inf <- files[grep('modeltype1',files)]
-# files_inf <- files_inf[grep('quantile',files_inf)]
-# files_zero <- files[grep('modeltype4',files)]
-# files_zero <- files_zero[grep('quantile',files_zero)]
-# 
-# files_reg <-  list.files('Model/CVL1000_Paper/hyperParamTune/test/')
-# files_reg <- files_reg[grep('.csv',files_reg)]
-# files_reg <- files_reg[grep('quantile',files_reg)]
-# all_files  <- list(files_inf,files_zero,files_reg)
-# 
-# # Load train correlation data
-# all_corr_train <- data.frame()
-# lamdas <- c(1e-08, 1e-07, 1e-06, 1e-05, 1e-04, 1e-03, 5e-03, 1e-02, 5e-02)
-# l <- 1
-# cell_previous <- 'nothing'
-# for (i in 1:length(all_files)){
-#   files_corr <- all_files[[i]][grep('TrainPerformance',all_files[[i]])]
-#   for (file in files_corr){
-#     cell <- str_split_fixed(file,'_',4)[1,2]
-#     if (cell_previous!=cell){
-#       l <- 1
-#       cell_previous <- cell
-#     }
-#     if (i==3) {
-#       file <- paste0('Model/CVL1000_Paper/hyperParamTune/test/',file)
-#     }else{
-#       file <- paste0('Model/CVL1000_Paper/MultipleRuns/test/',file)
-#     }
-#     tmp <- data.table::fread(file)
-#     colnames(tmp)[1] <- 'TF'
-#     if (i==3){
-#       tmp <- tmp %>% mutate(lamda = lamdas[l])
-#       l <- l+1
-#     }else if (i==1){
-#       tmp <- tmp %>% mutate(lamda=Inf)
-#     }else{
-#       tmp <- tmp %>% mutate(lamda=0)
-#     }
-#     tmp <- tmp %>% mutate(cell=cell)
-#     all_corr_train <- rbind(all_corr_train,tmp)
-#   }
-# }
-# # Load validation correlation data
-# all_corr_val <- data.frame()
-# lamdas <- c(1e-08, 1e-07, 1e-06, 1e-05, 1e-04, 1e-03, 5e-03, 1e-02, 5e-02)
-# l <- 1
-# cell_previous <- 'nothing'
-# for (i in 1:length(all_files)){
-#   files_corr <- all_files[[i]][grep('ValidationPerformance',all_files[[i]])]
-#   for (file in files_corr){
-#     cell <- str_split_fixed(file,'_',4)[1,2]
-#     if (cell_previous!=cell){
-#       l <- 1
-#       cell_previous <- cell
-#     }
-#     if (i==3) {
-#       file <- paste0('Model/CVL1000_Paper/hyperParamTune/test/',file)
-#     }else{
-#       file <- paste0('Model/CVL1000_Paper/MultipleRuns/test/',file)
-#     }
-#     tmp <- data.table::fread(file)
-#     colnames(tmp)[1] <- 'TF'
-#     if (i==3){
-#       tmp <- tmp %>% mutate(lamda = lamdas[l])
-#     }else if (i==1){
-#       tmp <- tmp %>% mutate(lamda=Inf)
-#     }else{
-#       tmp <- tmp %>% mutate(lamda=0)
-#     }
-#     tmp <- tmp %>% mutate(cell=cell)
-#     all_corr_val <- rbind(all_corr_val,tmp)
-#   }
-# }
-# 
-# 
-# df_corr_train <- all_corr_train %>% gather('quantile','r',-lamda,-cell,-TF)
-# df_corr_train <- df_corr_train %>% filter(quantile=="q0.25")
-# df_corr_train_random <-  all_corr_random_train %>% gather('quantile','r',-lamda,-cell,-TF)
-# df_corr_train_random <-df_corr_train_random %>% filter(quantile=="q0.25")
-# df_corr_train_random <- df_corr_train_random %>% group_by(cell,TF) %>% mutate(r=mean(r,na.rm = T)) %>% ungroup() %>% unique()
-# # df_corr_train_random <- df_corr_train_random %>% filter(!is.na(df_corr_train_random))
-# df_corr_train_random <- df_corr_train_random %>% group_by(lamda,cell) %>%  mutate(tf_rank=rank(-r)) %>% ungroup()
-# #### to add ranking ###
-# df_corr_train <- df_corr_train %>% group_by(cell,TF) %>% 
-#   mutate(r=ifelse(lamda==0 | lamda==Inf,mean(r),
-#                   r)) %>% ungroup() %>% unique()
-# df_corr_train <- df_corr_train %>% group_by(lamda,cell) %>%  mutate(tf_rank=rank(-r)) %>% ungroup()
-# df_corr_train <- rbind(df_corr_train,df_corr_train_random)
-# df_corr_train <- df_corr_train %>% filter(tf_rank<=15)
-# tfs_to_keep <- df_corr_train %>% select(lamda,cell,TF) %>% unique()
-# #colnames(tfs_to_keep)[3] <- 'TF_train'
-# ### Filtering rank end ###
-# df_corr_train <- df_corr_train %>% group_by(lamda,cell) %>% mutate(mean_pear = mean(r,na.rm = T)) %>% ungroup()
-# #df_corr_train <- df_corr_train %>% select(-TF,-r) %>% unique()
-# df_corr_train$lamda <- factor(df_corr_train$lamda,
-#                               levels = c("0","1e-08","1e-07","1e-06","1e-05","1e-04",
-#                                          "0.001","0.005","0.01","0.05","Inf",
-#                                          "shuffleX","shuffleY"))
-# p3 <- ggboxplot(df_corr_train %>% select(lamda,mean_pear) %>% unique(), x = "lamda", y = "mean_pear",add='jitter')+
-#   ggtitle('Top 15% ranked TFs in each individual training set') +
-#   theme(text = element_text(size=11),plot.title = element_text(hjust = 0.5)) +
-#   xlab('λ') + ylab('average across TFs pearson`s r') + scale_y_continuous(limits = c(0,1))
-# p3_1 <- p3 + stat_compare_means(comparisons = list(c('0','Inf'),
-#                                                    c('0','shuffleX'),
-#                                                    c('0','shuffleY')),
-#                                 label = 'p.format',
-#                                 label.y = c(0.88,0.92,0.96),
-#                                 method = 'wilcox.test',
-#                                 tip.length=0.05) 
-# #p3 <- p3 + stat_compare_means(method = "kruskal.test")
-# print(p3_1)
-# 
-# df_corr_val_random <-  all_corr_random_val %>% gather('quantile','r',-lamda,-cell,-TF)
-# df_corr_val_random  <- df_corr_val_random %>% filter(quantile=="q0.25")
-# df_corr_val <- all_corr_val %>% gather('quantile','r',-lamda,-cell,-TF)
-# df_corr_val <- df_corr_val %>% filter(quantile=="q0.25")
-# df_corr_val_random <- df_corr_val_random %>% group_by(lamda,cell) %>% mutate(mean_pear = mean(r,na.rm = T)) %>% ungroup()
-# df_corr_val <- df_corr_val %>% group_by(lamda,cell) %>% mutate(mean_pear = mean(r,na.rm = T)) %>% ungroup()
-# df_corr_val <- rbind(df_corr_val,df_corr_val_random)
-# ### filter based on training ###
-# df_corr_val <- left_join(tfs_to_keep,df_corr_val)
-# #df_corr_val <- df_corr_val %>% mutate(keep= (TF==TF_train)) %>% filter(keep==TRUE) %>% 
-# #  select(-TF_train,-keep) %>% unique()
-# ####filtering ended ###
-# df_corr_val$lamda <- factor(df_corr_val$lamda,
-#                             levels = c("0","1e-08","1e-07","1e-06","1e-05","1e-04",
-#                                        "0.001","0.005","0.01","0.05","Inf",
-#                                        "shuffleX","shuffleY"))
-# #df_corr_val <- df_corr_val %>% select(-TF,-r) %>% unique()
-# p3 <- ggboxplot(df_corr_val %>% select(lamda,mean_pear) %>% unique(), x = "lamda", y = "mean_pear",add='jitter')+
-#   ggtitle('Filtered TFs to keep only 15% ranked TFs from training') +
-#   theme(text = element_text(size=11),plot.title = element_text(hjust = 0.5)) +
-#   xlab('λ') + ylab('average across TFs pearson`s r')
-# p3_2 <- p3 + stat_compare_means(comparisons = list(c('1e-04','0.005'),
-#                                                    c('0.001','0.005'),
-#                                                    c('0.005','0.01'),
-#                                                    c('0','Inf'),
-#                                                    c('0','shuffleX'),
-#                                                    c('0','shuffleY')),
-#                                 label = 'p.format',
-#                                 method = 'wilcox.test',
-#                                 tip.length=0.05) 
-# #p3 <- p3 + stat_compare_means(method = "kruskal.test")
-# print(p3_2)

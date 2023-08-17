@@ -11,7 +11,7 @@ library(ggstatsplot)
 library(factoextra)
 
 ### Load data
-files <- list.files('Model/CVL1000_Paper/FinalEnsemble/EstimateEnsembles/')
+files <- list.files('../results/FinalEnsemble/EstimateEnsembles/')
 files <- files[grep('.csv',files)]
 
 # # Load train correlation data
@@ -60,9 +60,9 @@ files <- files[grep('.csv',files)]
 #         'Model/CVL1000_Paper/FinalEnsemble/EstimateEnsembles/figures/all_corr_val.rds')
 # saveRDS(all_corr_train,
 #         'Model/CVL1000_Paper/FinalEnsemble/EstimateEnsembles/figures/all_corr_train.rds')
-all_corr_val <- data.table::fread('Model/CVL1000_Paper/FinalEnsemble/EstimateEnsembles/valEnsemblePerformance_ensembles_all.csv')
+all_corr_val <- data.table::fread('../results/FinalEnsemble/EstimateEnsembles/valEnsemblePerformance_ensembles_all.csv')
 colnames(all_corr_val)[1] <- 'TF' 
-all_corr_train <- data.table::fread('Model/CVL1000_Paper/FinalEnsemble/EstimateEnsembles/trainEnsemblePerformance_ensembles_all.csv')
+all_corr_train <- data.table::fread('../results/FinalEnsemble/EstimateEnsembles/trainEnsemblePerformance_ensembles_all.csv')
 colnames(all_corr_train)[1] <- 'TF' 
 ### Get average across all TFs and create data frame for visualization
 all_corr_val <- all_corr_val %>% group_by(ensembles,trial,cell) %>% mutate(mean_across_tfs = mean(r,na.rm = T)) %>% ungroup()
@@ -90,7 +90,7 @@ p <- p + xlim(c(0,max(all_corr_val$ensembles))) + ylim(c(0,max(all_corr_val$mean
 p <- p + theme_minimal(base_family = "Arial",base_size = 16)+theme(plot.title = element_text(hjust = 0.5,size=16))
 print(p)
 
-png('Model/CVL1000_Paper/FinalEnsemble/EstimateEnsembles/figures/validationPerformance_vs_numberOfEnsembles.png',
+png('../article_supplementary_info/validationPerformance_vs_numberOfEnsembles.png',
     width=8,height=8,units = "in",res = 600)
 print(p)
 dev.off()
@@ -103,7 +103,7 @@ p2 <- p2 + xlim(c(0,max(all_corr_train$ensembles))) + ylim(c(0,max(all_corr_trai
 p2 <- p2 + theme_minimal(base_family = "Arial",base_size = 16)+theme(plot.title = element_text(hjust = 0.5,size=16))
 print(p2)
 
-png('Model/CVL1000_Paper/FinalEnsemble/EstimateEnsembles/figures/trainPerformance_vs_numberOfEnsembles.png',
+png('../article_supplementary_info/trainPerformance_vs_numberOfEnsembles.png',
     width=8,height=8,units = "in",res = 600)
 print(p2)
 dev.off()

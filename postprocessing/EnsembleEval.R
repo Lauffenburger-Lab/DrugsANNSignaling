@@ -11,7 +11,7 @@ library(ggstatsplot)
 library(factoextra)
 
 ### Load data per TF analysis-----------
-files <- list.files('Model/CVL1000_Paper/FinalEnsemble/test/')
+files <- list.files('../results/FinalEnsemble/test/')
 files <- files[grep('.csv',files)]
 
 # Load train correlation data
@@ -19,7 +19,7 @@ all_corr_train <- data.frame()
 files_corr <- files[grep('trainPerformance',files)]
 for (file in files_corr){
   cell <- str_split_fixed(file,'_',4)[1,2]
-  file <- paste0('Model/CVL1000_Paper/FinalEnsemble/test/',file)
+  file <- paste0('../results/FinalEnsemble/test/',file)
   tmp <- data.table::fread(file)
   colnames(tmp)[1] <- 'no'
   tmp <- tmp %>% select(- no) %>% unique()
@@ -33,7 +33,7 @@ all_corr_val <- data.frame()
 files_corr <- files[grep('valPerformance',files)]
 for (file in files_corr){
   cell <- str_split_fixed(file,'_',4)[1,2]
-  file <- paste0('Model/CVL1000_Paper/FinalEnsemble/test/',file)
+  file <- paste0('../results/FinalEnsemble/test/',file)
   tmp <- data.table::fread(file)
   colnames(tmp)[1] <- 'no'
   tmp <- tmp %>% select(- no) %>% unique()
@@ -50,7 +50,7 @@ files_corr <- files[grep('trainEnsemblePerformance',files)]
 for (file in files_corr){
   cell <- str_split_fixed(file,'_',2)[1,2]
   cell <- str_split_fixed(cell,'[.]',2)[1,1]
-  file <- paste0('Model/CVL1000_Paper/FinalEnsemble/test/',file)
+  file <- paste0('../results/FinalEnsemble/test/',file)
   tmp <- data.table::fread(file,header = T)
   colnames(tmp)[1] <- 'TF'
   colnames(tmp)[2] <- 'r'
@@ -65,7 +65,7 @@ files_corr <- files[grep('valEnsemblePerformance',files)]
 for (file in files_corr){
   cell <- str_split_fixed(file,'_',2)[1,2]
   cell <- str_split_fixed(cell,'[.]',2)[1,1]
-  file <- paste0('Model/CVL1000_Paper/FinalEnsemble/test/',file)
+  file <- paste0('../results/FinalEnsemble/test/',file)
   tmp <- data.table::fread(file,header = T)
   colnames(tmp)[1] <- 'TF'
   colnames(tmp)[2] <- 'r'
@@ -102,7 +102,7 @@ p3_1_2 <- p3_1_2 + stat_compare_means(comparisons = list(c('Individual models','
                                       tip.length=0.05)
 print(p3_1_1/p3_1_2)
 
-png('ensembles_vs_individual_runs_perTF_trainperformance.png',units = 'in',width = 12,height = 12,res=600)
+png('../article_supplementary_info/suppl_figure_1A.png',units = 'in',width = 12,height = 12,res=600)
 print(p3_1_1/p3_1_2)
 dev.off()
 
@@ -133,11 +133,11 @@ p3_2_2 <- p3_2_2 + stat_compare_means(comparisons = list(c('Individual models','
                                       tip.length=0.05)
 print(p3_2_1/p3_2_2)
 
-png('ensembles_vs_individual_runs_perTF_validationperformance.png',units = 'in',width = 12,height = 12,res=600)
+png('../article_supplementary_info/suppl_figure1B.png',units = 'in',width = 12,height = 12,res=600)
 print(p3_2_1/p3_2_2)
 dev.off()
 
-data.table::fwrite(df_corr_val_ensemble,'Model/CVL1000_Paper/FinalEnsemble/meanCorrPerTFEnsembleVal_lamda6.csv')
+data.table::fwrite(df_corr_val_ensemble,'../results/FinalEnsemble/perTFValidationPerformance.csv')
 
 ### Check relationship between goodness of fit and validation performance---------------------------
 ### Find median rank cut-off to include versus train correlation
@@ -169,7 +169,7 @@ p7 <- ggplot(df_corr,aes(x=tf_rank,y=r,color=cell)) + geom_point() + geom_smooth
                                                                                                           linetype = 'dashed', 
                                                                                                           linewidth=0.25)) +
   scale_y_continuous(limits = c(-0.85,0.85),breaks = seq(-0.85,0.85,0.2))
-png('Model/CVL1000_Paper/FinalEnsemble/EstimateEnsembles/figures/rank_vs_performance_ensembles.png',
+png('../article_supplementary_info/suppl_figure4B.png',
     units = 'in',width = 12,height = 12,res = 600)
 print(p7)
 dev.off()
@@ -192,7 +192,7 @@ p8 <- ggplot(cutPear,aes(x=thresh,y=r,color=cell)) + geom_point() + geom_smooth(
                                                                                                           linewidth=0.25)) +
   scale_y_continuous(limits = c(0,0.8),breaks = seq(0,0.8,0.1))
 print(p8)
-png('Model/CVL1000_Paper/FinalEnsemble/EstimateEnsembles/figures/rankThreshold_vs_performance_ensembles.png'
+png('../article_supplementary_info/suppl_figure4A.png'
     ,units = 'in',width = 12,height = 12,res = 600)
 print(p8)
 dev.off()
@@ -203,7 +203,7 @@ all_corr_train <- data.frame()
 files_corr <- files[grep('trainPerformance',files)]
 for (file in files_corr){
   cell <- str_split_fixed(file,'_',4)[1,2]
-  file <- paste0('Model/CVL1000_Paper/FinalEnsemble/test/',file)
+  file <- paste0('../results/FinalEnsemble/test/',file)
   tmp <- data.table::fread(file)
   colnames(tmp)[1] <- 'no'
   tmp <- tmp %>% unique()
@@ -217,7 +217,7 @@ all_corr_val <- data.frame()
 files_corr <- files[grep('valPerformance',files)]
 for (file in files_corr){
   cell <- str_split_fixed(file,'_',4)[1,2]
-  file <- paste0('Model/CVL1000_Paper/FinalEnsemble/test/',file)
+  file <- paste0('../results/FinalEnsemble/test/',file)
   tmp <- data.table::fread(file)
   colnames(tmp)[1] <- 'no'
   tmp <- tmp %>% unique()
@@ -270,7 +270,7 @@ p3_1_2 <- p3_1_2 + stat_compare_means(comparisons = list(c('Individual models','
                                       method = 'wilcox.test',
                                       tip.length=0.05)
 print(p3_1_1/p3_1_2)
-png('ensembles_vs_individual_runs_perTF_trainperformance_wellfitted5.png',units = 'in',width = 12,height = 12,res=600)
+png('../article_supplementary_info/ensembles_vs_individual_runs_perTF_trainperformance_wellfitted5.png',units = 'in',width = 12,height = 12,res=600)
 print(p3_1_1/p3_1_2)
 dev.off()
 
@@ -294,12 +294,12 @@ p3_2_2 <- p3_2_2 + stat_compare_means(comparisons = list(c('Individual models','
                                       tip.length=0.05)
 print(p3_2_1/p3_2_2)
 
-png('ensembles_vs_individual_runs_perTF_validationperformance_wellfitted5.png',units = 'in',width = 12,height = 12,res=600)
+png('../article_supplementary_info/ensembles_vs_individual_runs_perTF_validationperformance_wellfitted5.png',units = 'in',width = 12,height = 12,res=600)
 print(p3_2_1/p3_2_2)
 dev.off()
 
 ### Load standard deviation and mean of prediction of ensembles------------------
-files <- list.files('Model/CVL1000_Paper/FinalEnsemble/preds/')
+files <- list.files('../results/FinalEnsemble/preds/')
 files <- files[grep('.csv',files)]
 files <- files[which(!grepl('val',files))]
 
@@ -307,8 +307,8 @@ all_cv_train <- data.frame()
 files_std <- files[grep('std',files)]
 for (file in files_std){
   cell <- str_split_fixed(file,'_',4)[1,2]
-  file <- paste0('Model/CVL1000_Paper/FinalEnsemble/preds/',file)
-  meanFile <- paste0('Model/CVL1000_Paper/FinalEnsemble/preds/Y_',cell,'_mean_train.csv')
+  file <- paste0('../results/FinalEnsemble/preds/',file)
+  meanFile <- paste0('../results/FinalEnsemble/preds/Y_',cell,'_mean_train.csv')
   tmp <- data.table::fread(file) %>% column_to_rownames('V1')
   tmp_mean <- data.table::fread(meanFile) %>% column_to_rownames('V1')
   print(all(rownames(tmp)==rownames(tmp_mean)))

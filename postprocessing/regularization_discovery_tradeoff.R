@@ -9,13 +9,13 @@ library(xlsx)
 # plan(multiprocess,workers = 9)
 
 # Load regularization results
-regularization <- read.xlsx('Model/CVL1000_Paper/HyperParamInteractionResults/hitDiscoveryResults.xlsx',
+regularization <- read.xlsx('../results/FinalEnsemble/regularizationTuneInteractionResults/hitDiscoveryResults.xlsx',
                             sheetIndex = 1)[,1:13]
 #regularization <- regularization %>% filter(threshold>=5 & threshold<=50)
 #regularization <- regularization %>% filter(lamda>=1e-7 & lamda<=0.001 & lamda!=0.001)
 regularization$threshold <- factor(regularization$threshold,
                                    levels = unique(regularization$threshold))
-regularization_errorbased <- data.table::fread('Model/CVL1000_Paper/HyperParamInteractionResults/error_based_inference/all_regularizations_interactions_drugs.csv')
+regularization_errorbased <- data.table::fread('../results/FinalEnsemble/regularizationTuneInteractionResults/error_based_inference/all_regularizations_interactions_drugs.csv')
 regularization_errorbased <- regularization_errorbased %>% select(-V1)
 regularization_errorbased <- regularization_errorbased %>% mutate(tp=1*(`Prior knowledge`==Inferred & Inferred=='Interaction')) %>% 
   mutate(fp=1*(`Prior knowledge`=='No interaction' & Inferred=='Interaction')) %>%
@@ -74,11 +74,11 @@ p2_error_derived <- ggplot(rbind(regularization_errorbased %>% select(lamda,c('v
                                         linetype = 'dashed', 
                                         linewidth=0.25))
 print(p2_error_derived)
-png('regularizationTuning_errorbased.png',units = 'in',width = 12,height = 8,res = 600)
+png('../article_supplementary_info/suppl_figure5B.png',units = 'in',width = 12,height = 8,res = 600)
 print(p2_error_derived)
 dev.off()
 
-ggsave('regularizationTuning_errorbased.eps',
+ggsave('../article_supplementary_info/suppl_figure5B.eps',
        plot = p2_error_derived,
        device = cairo_ps,
        scale = 1,
@@ -87,11 +87,11 @@ ggsave('regularizationTuning_errorbased.eps',
        units = "in",
        dpi = 600)
 
-png('regularizationTuning.png',units = 'in',width = 12,height = 8,res = 600)
+png('../figures/figure1D.png',units = 'in',width = 12,height = 8,res = 600)
 print(p2)
 dev.off()
 
-ggsave('regularizationTuning.eps',
+ggsave('../figures/figure1D.eps',
        plot = p2,
        device = cairo_ps,
        scale = 1,
@@ -101,7 +101,7 @@ ggsave('regularizationTuning.eps',
        dpi = 600)
 
 ### Get also plot for optimal G-mean
-regularization_optimal <- read.xlsx('Model/CVL1000_Paper/HyperParamInteractionResults/hitDiscoveryResults.xlsx',
+regularization_optimal <- read.xlsx('../results/FinalEnsemble/regularizationTuneInteractionResults/hitDiscoveryResults.xlsx',
                             sheetIndex = 1)
 regularization_optimal <- regularization_optimal %>% mutate(NDR=new_hits.1/(new_hits.1+tp.1)) %>% select(lamda,optimalG,NDR) %>% unique()
 p2_optimal <- ggplot(rbind(regularization_optimal %>% select(lamda,c('value'='optimalG')) %>% mutate(metric='G-mean') %>% unique(),
@@ -123,6 +123,6 @@ p2_optimal <- ggplot(rbind(regularization_optimal %>% select(lamda,c('value'='op
                                         linewidth=0.25))
 print(p2_optimal)
 
-png('regularizationTuning_optimal.png',units = 'in',width = 12,height = 8,res = 600)
+png('../article_supplementary_info/suppl_figure5A.png',units = 'in',width = 12,height = 8,res = 600)
 print(p2_optimal)
 dev.off()
