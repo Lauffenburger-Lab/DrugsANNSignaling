@@ -339,14 +339,15 @@ insilico_val_2plot <- insilico_val_2plot %>% filter(perturbation!='CDK2-5-inhibi
 # insilico_val_inhibitors <-  readRDS('insilico_val_inhibitors_figure4.rds')
 
 ggdotplot(rbind(insilico_val_2plot,insilico_val_inhibitors),x='perturbation',y=tf,fill = 'perturbation',shape='group')+
-  #ylim(c(0,1)) +
+  ylim(c(-5.5,4))+
   geom_segment(aes(x = 'lestaurtinib', xend = 'lestaurtinib',
-                   y = -3.85449453,yend = -2.6),
+                   y = -5.5,yend = -2.6),
                linewidth=1,color='red',arrow = arrow())+
-  ylab(paste0(tf,' activity')) +
+  #ylab(paste0(tf,' activity')) +
+  ylab('') + 
   geom_hline(yintercept = 0,linetype='dashed',color='black',linewidth=1) +
-  theme(text=element_text(size=18),
-        axis.text.x = element_text(angle=90),
+  theme(text=element_text(size=20),
+        axis.text.x = element_text(size=14,angle=90),
         legend.position = 'none')
 ggsave('Model/CVL1000_Paper/ExperimentalValidation/l1000_ligands_inhibitors_leustartinib_foxm1.eps',
        device = cairo_ps,
@@ -375,6 +376,11 @@ insilico_perturbations <- insilico_perturbations %>%
   mutate(`FOXM1 activity`=ifelse(perturbation %in% c('EGFR','NTRK1','FLT3','ADRB1',
                                                      'CDK1+EGFR','CDK1+NTRK1','CDK1+FLT3','CDK1+ADRB1'),
                                  NA,`FOXM1 activity`))
+
+stats.tests = insilico_perturbations %>% filter(!is.na(`FOXM1 activity`)) %>%
+  rstatix::wilcox_test(`FOXM1 activity` ~ perturbation) %>% 
+  rstatix::adjust_pvalue(method = 'bonferroni') %>% ungroup()
+
 # ALSO THE MANUAL COLORS ARE FOR WHEN THE NODES ARE MISSING
 
 # ggboxplot(insilico_perturbations,
@@ -390,7 +396,18 @@ insilico_perturbations <- insilico_perturbations %>%
 #   geom_hline(yintercept = 0.5,linetype='dashed',color='black',linewidth=1) +
 #   theme(text=element_text(size=24),
 #         axis.text.x = element_text(angle = 0),
-#         legend.position = 'none')
+#         legend.position = 'none')+ 
+#   stat_pvalue_manual(stats.tests %>% mutate(group_combo=paste0(group1,'_',group2)) %>%
+#                        filter(group_combo %in% c('DMSO_lestaurtinib',
+#                                                  'DMSO_on-target',
+#                                                  'CDK2_DMSO',
+#                                                  'CDK1_DMSO',
+#                                                  'CDK1_on-target',
+#                                                  'CDK2_on-target')),
+#                      label = "p.adj = {scales::pvalue(p.adj)}",
+#                      y.position = c(0.88,0.95,0.92,0.98,0.82,0.85),
+#                      bracket.nudge.y = 0.01)
+
 ggboxplot(insilico_perturbations,
           x='perturbation',y='FOXM1 activity',
           color='perturbation',
@@ -398,7 +415,18 @@ ggboxplot(insilico_perturbations,
   geom_hline(yintercept = 0.5,linetype='dashed',color='black',linewidth=1) +
   theme(text=element_text(size=24),
         axis.text.x = element_text(angle = 0),
-        legend.position = 'none')
+        legend.position = 'none') + 
+  stat_pvalue_manual(stats.tests %>% mutate(group_combo=paste0(group1,'_',group2)) %>%
+                       filter(group_combo %in% c('DMSO_lestaurtinib',
+                                                 'DMSO_on-target',
+                                                 'CDK2_DMSO',
+                                                 'CDK1_DMSO',
+                                                 'CDK1_on-target',
+                                                 'CDK2_on-target')),
+                     label = "p.adj = {scales::pvalue(p.adj)}",
+                     y.position = c(0.88,0.95,0.92,0.98,0.82,0.85),
+                     bracket.nudge.y = 0.01)
+
 ggsave('Model/CVL1000_Paper/ExperimentalValidation/KOs_simulations_minus100.eps',
        device= cairo_ps,
        scale = 1,

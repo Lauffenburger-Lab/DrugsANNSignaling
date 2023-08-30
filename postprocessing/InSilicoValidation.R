@@ -70,10 +70,23 @@ results <- TF_activities %>% filter(TF=='FOXM1') %>% filter(knockdown %in% c('un
                                                                              'EGFR','CDK6','CDK1'))
 ggdotplot(results,x='knockdown',y='value',fill='knockdown') +
   geom_hline(yintercept = 0,linetype='dashed',color='black',linewidth=1) +
+  ylim(c(-5.5,4))+
   ylab('FOXM1 TF activity') + 
   theme(text=element_text(size=20),
         axis.text.x = element_text(angle=90),
         legend.position='none')
+#   stat_compare_means(comparisons = list(c('CDK2','CONTROL'),
+#                                         c('CDK2','untreated'),
+#                                         c('FOXM1','CONTROL'),
+#                                         c('FOXM1','untreated')),
+#                      method='wilcox.test',size = 7)
+# 
+#   
+#   stat_compare_means(method='kruskal.test',size = 7,label.y = 0.78)
+# stat.test <- lembas_noisy %>% 
+#   rstatix::wilcox_test(r ~ cell, comparisons = list(c('A375','HA1E')))
+# p3_2_3 <- p3_2_3  + stat_pvalue_manual(stat.test, label = "Wilcox test p = {p}",y.position = 0.75,size = 7)
+
 ggsave('Model/CVL1000_Paper/ExperimentalValidation/geo_kos_foxm1.eps',
        device=cairo_ps,
        scale = 1,

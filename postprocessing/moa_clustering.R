@@ -1050,6 +1050,17 @@ ggsave('../MIT/LauffenburgerLab/drugLembasPaper/A375model_interaction_discovery_
        units = "in",
        dpi = 600)
 
+## Calculate p.values of individual models
+p_vals_one <- NULL
+for (i in 1:no_models){
+  model_predictions <- distinct(merged_interactions_all %>% filter(model_no==i-1) %>% 
+                                        select("drug","variable","Prior knowledge","Inferred"))
+  confusion <- confusionMatrix(data=factor(model_predictions$Inferred,levels = c(1,0)), 
+                               reference = factor(model_predictions$`Prior knowledge`,levels = c(1,0)))
+  p_vals_one[i] <- confusion$overall['AccuracyPValue']
+}
+hist(p_vals_one)
+
 p2 <- ggplot(df_res %>% filter(metric=='pvalue'),
        aes(x=thresholds,y=value)) + 
   #ylim(c(0,1))+
@@ -1064,6 +1075,9 @@ p2 <- ggplot(df_res %>% filter(metric=='pvalue'),
   geom_hline(yintercept = 0.01,linetype='dashed',linewidth=1.5,color='red')+
   annotate('text',x=0.25,y=1e-07,
            label='p-value = 0.01',size=10)+
+  geom_hline(yintercept = mean(p_vals_one),linetype='dashed',linewidth=1.5,color='orange')+
+  annotate('text',x=0.25,y=10000,
+           label='p-value of individual models',size=10)+
   theme(text = element_text(family = 'Arial',size=24),
         axis.text = element_text(family = 'Arial',size = 24),
         axis.title = element_text(family = 'Arial',size = 24),

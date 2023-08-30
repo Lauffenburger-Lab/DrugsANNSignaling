@@ -263,9 +263,9 @@ p3_2_1 <- ggboxplot(df_corr_val_ensemble_filtered,
   guides(color = guide_legend(override.aes = list(shape = c(16, 16, NA))),
          alpha = "none") +
   theme(text = element_text(family='Arial',size=22),plot.title = element_text(hjust = 0.5),
-        legend.position = 'top',
+        legend.position = 'none',
         legend.title = element_blank(),
-        legend.text = element_text(size=22) ) +
+        legend.text = element_text(size=22)) +
   xlab('model') + ylab('per TF pearson`s r')+ 
   scale_y_continuous(breaks = c(-0.6,-0.4,-0.2,0,seq(0.2,1,0.2)),limits = c(-0.635,1.1)) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=1,color='black')
@@ -286,7 +286,7 @@ lembas_noisy <- lembas_noisy %>% mutate(noisy = ifelse(tf_rank<=25,'well-fitted'
                                                        ifelse(tf_rank<75,'NA',
                                                               'poorly-fitted')))
 lembas_noisy$noisy <- factor(lembas_noisy$noisy,
-                                              levels=c('well-fitted','poorly-fitted','NA')) #'medium-fitted'
+                             levels=c('well-fitted','poorly-fitted','NA')) #'medium-fitted'
 median_cell_values <- aggregate(r ~ cell, lembas_noisy, mean)
 lembas_noisy$cell <- factor(lembas_noisy$cell, levels = median_cell_values$cell[order(median_cell_values$r)])
 p3_2_3 <- ggboxplot(lembas_noisy, x = "cell", y = "r",outlier.shape = NA)+
@@ -294,10 +294,11 @@ p3_2_3 <- ggboxplot(lembas_noisy, x = "cell", y = "r",outlier.shape = NA)+
   scale_color_manual(labels = c('well-fitted','poorly-fitted',''),
                      values =  c("#00AFBB","#FC4E07", "black"))+
   scale_alpha_manual(values=c(1,1,0.5))+
-  guides(color = "none",
+  guides(color = guide_legend(override.aes = list(shape = c(16, 16, NA))),
          alpha = "none") +
-  ggtitle('LEMBAS-based model per cell line') + #geom_jitter(aes(color=cell))+
-  theme(text = element_text(family='Arial',size=22),plot.title = element_text(size=20,hjust = 0.5,vjust=1),legend.position = 'none') +
+  #ggtitle('LEMBAS-based model per cell line') + #geom_jitter(aes(color=cell))+
+  theme(text = element_text(family='Arial',size=22),plot.title = element_text(size=20,hjust = 0.5,vjust=1),
+        legend.position = 'top',legend.title = element_blank()) +
   xlab('cell line') + ylab('per TF pearson`s r') + scale_y_continuous(n.breaks = 10) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=1,color='black')
 p3_2_3 <- p3_2_3 + stat_compare_means(method='kruskal.test',size = 7,label.y = 0.78)
@@ -306,7 +307,7 @@ stat.test <- lembas_noisy %>%
 p3_2_3 <- p3_2_3  + stat_pvalue_manual(stat.test, label = "Wilcox test p = {p}",y.position = 0.75,size = 7)
 print(p3_2_3)
 png('../MIT/LauffenburgerLab/SBHD 2023/model_vanillas_ensembles_comparison_validation_perTF_2.png',units = 'in',width = 16,height = 16,res=600)
-print(p3_2_1/p3_2_3)
+print(p3_2_3/p3_2_1)
 dev.off()
 ggsave('figure1B.eps',
        device = cairo_ps,
@@ -320,7 +321,7 @@ ggsave('figure1B.eps',
 p3_2_1 <- ggboxplot(df_corr_val_ensemble_filtered  %>% filter(tf_rank<=10),
                     x = "model", y = "r" ,outlier.shape = NA)+
   geom_point(position = position_jitter(width = 0.2))+
-  ggtitle('Top 10% fitted TFs')+
+  #ggtitle('Top 10% fitted TFs')+
   # scale_color_manual(labels = c('MCF7','HA1E','','','','','',''),
   #                    values =  c("#b30024","#00b374", "black", "black", "black", "black", "black", "black"))+
   # scale_alpha_manual(values=c(1,1,0.5,0.5,0.5,0.5,0.5,0.5))+
