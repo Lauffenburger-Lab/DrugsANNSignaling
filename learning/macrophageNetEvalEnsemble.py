@@ -1,6 +1,6 @@
 import torch
 import numpy
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr,beta
 import matplotlib.pyplot as plt
 import bionetwork as SingleBionet
 import bionetworkWithDrugs as bionetwork
@@ -237,13 +237,23 @@ for c,cell in enumerate(cell_lines):
     Y_STD_VAL = torch.std(Y_ALL_VAL, 0)
 
     pearVal = pearson_r(Y_MEAN_VAL.detach(), Y_val.detach()).detach().numpy()
+    dist = beta(Y_MEAN_VAL.shape[0] / 2 - 1, Y_MEAN_VAL.shape[0] / 2 - 1, loc=-1, scale=2)
+    pvaluesVal = [2*dist.cdf(-abs(r)) for r in list(pearVal)]
     pearVal = pandas.DataFrame(pearVal)
     pearVal.index = TFOutput_val.columns
     pearVal.to_csv('../results/FinalEnsemble/test/valEnsemblePerformance_' + cell + '.csv')
+    pvaluesVal = pandas.DataFrame(numpy.array(pvaluesVal))
+    pvaluesVal.index = TFOutput_val.columns
+    pvaluesVal.to_csv('../results/FinalEnsemble/test/valEnsemblePvalues_' + cell + '.csv')
     pearTrain = pearson_r(Y_MEAN_TRAIN.detach(), Y_train.detach()).detach().numpy()
+    dist = beta(Y_MEAN_TRAIN.shape[0] / 2 - 1, Y_MEAN_TRAIN.shape[0] / 2 - 1, loc=-1, scale=2)
+    pvaluesTrain = [2 * dist.cdf(-abs(r)) for r in list(pearTrain)]
     pearTrain = pandas.DataFrame(pearTrain)
     pearTrain.index = TFOutput_train.columns
     pearTrain.to_csv('../results/FinalEnsemble/test/trainEnsemblePerformance_' + cell + '.csv')
+    pvaluesTrain = pandas.DataFrame(numpy.array(pvaluesTrain))
+    pvaluesTrain.index = TFOutput_train.columns
+    pvaluesTrain.to_csv('../results/FinalEnsemble/test/trainEnsemblePvalues_' + cell + '.csv')
 
     Y_MEAN_TRAIN = pandas.DataFrame(Y_MEAN_TRAIN.detach().numpy())
     Y_MEAN_TRAIN.index = TFOutput_train.index

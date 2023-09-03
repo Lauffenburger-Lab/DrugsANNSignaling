@@ -80,6 +80,23 @@ for (i in 1:length(all_files)){
     df_corr_val <- rbind(df_corr_val,tmp)
   }
 }
+df_pvalue_val <- data.frame()
+for (i in 1:length(all_files)){
+  if (i==1){
+    files_pvalue <- all_files[[i]][grep('valEnsemblePvalues',all_files[[i]])]
+    for (file in files_pvalue){
+      cell <- str_split_fixed(file,'_',2)[1,2]
+      cell <- str_split_fixed(cell,'[.]',2)[1,1]
+      file <- paste0('Model/CVL1000_Paper/FinalEnsemble/test/',file)
+      tmp <- data.table::fread(file,header = T)
+      colnames(tmp)[1] <- 'TF'
+      colnames(tmp)[2] <- 'pvalue'
+      tmp <- tmp %>% mutate(p.adj = p.adjust(pvalue,'BH'))
+      tmp <- tmp %>% mutate(cell=cell)
+      df_pvalue_val <- rbind(df_pvalue_val,tmp)
+    }
+  }
+}
 
 # Add random shuffle
 random_files <- list.files('Model/CVL1000_Paper/RandomSuffleY/test/')
@@ -280,6 +297,24 @@ p3_2_1 <- p3_2_1 + stat_compare_means(comparisons = list(c('LEMBAS-based','ANN')
                                       method = 'wilcox.test',
                                       tip.length=0.05)
 print(p3_2_1)
+### Boxplot the p-values of individual TFs
+tt <- left_join(df_pvalue_val,
+                df_corr_val %>% filter(model=='LEMBAS-based') %>% select(TF,cell,r,mean_pear) %>% unique())
+ggboxplot(tt %>% mutate(logPadj = -log10(p.adj)) %>%
+            group_by(TF) %>% mutate(median_padj = median(logPadj)) %>% ungroup() %>%
+            arrange(-logPadj,TF),
+       x='TF',y='logPadj',outlier.shape = NA) +
+  geom_point(aes(color=r),size=1)+
+  scale_color_continuous(type='viridis')+
+  ylab('-log10(p.adjusted)') +
+  xlab('transcription factors')+
+  geom_hline(yintercept = -log10(0.05),linetype='dashed',color='red',size=1.5)+
+  coord_flip() +
+  annotate('text',x=98.5,y=3.5,label='p.adjusted = 0.05',size=6)+
+  theme(text = element_text(size=20,family = 'Arial'),
+        axis.text.y = element_blank(),
+        legend.position = 'top')
+
 lembas_noisy <- left_join(lembas,df_corr_train %>% filter(model=='LEMBAS-based') %>%select(cell,TF,tf_rank) %>%unique())
 # lembas_noisy <- lembas_noisy %>% filter(!(cell %in% c('MCF7','HEPG2')))
 lembas_noisy <- lembas_noisy %>% mutate(noisy = ifelse(tf_rank<=25,'well-fitted',
