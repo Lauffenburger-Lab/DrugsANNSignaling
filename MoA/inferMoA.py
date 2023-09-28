@@ -81,9 +81,9 @@ def pathFinder(source,target,network,mode='Shortest',max_depth = 5):
     return paths
 
 parser = argparse.ArgumentParser(prog='Infer MoA')
-parser.add_argument('--ensembles_path', action='store', default="CVL1000_Paper/A549_ensembles/")
+parser.add_argument('--ensembles_path', action='store', default="../results/A375_ensembles/")
 parser.add_argument('--inputPattern', action='store', default="l1000_latest_model_modeltype4_model")
-parser.add_argument('--cell_line', action='store', default="A549")
+parser.add_argument('--cell_line', action='store', default="A375")
 parser.add_argument('--numberOfModels', action='store', default=50)
 parser.add_argument('--ConvertToEmpProb', action='store',default=False)
 args = parser.parse_args()
@@ -99,11 +99,11 @@ inputPath = ensembles_path + inputPattern
 
 ### Choose TF and drug to investigate
 # interestingSamples = pd.read_csv(ensembles_path+'interestingSamples.csv',index_col=1)
-TF = "P01106"
-TF_gene = "MYC"
-drug = "Nc1ccccc1NC(=O)c1ccc(CNc2nccc(n2)-c2cccnc2)cc1"
-drug_name = "mocetinostat"
-sample = "CPC014_A549_6H:BRD-K16485616-001-03-0:10"
+TF = "Q08050"
+TF_gene = "FOXM1"
+drug = "C[C@]12O[C@H](C[C@]1(O)CO)n1c3ccccc3c3c4C(=O)NCc4c4c5ccccc5n2c4c13"
+drug_name = "lestaurtinib"
+sample = "CPC014_A375_6H:BRD-K23192422-001-01-1:10"
 moa_off_target = 'any'
 #'inhibit'
 
@@ -121,17 +121,17 @@ Path(ensembles_path + 'InteractionScores/MergedInteractions/'+drug_name).mkdir(p
 
 ### Load network
 #Load network
-networkList, nodeNames, modeOfAction = bionetwork.loadNetwork('data/l1000_lvl3_withsignor-Model.tsv')
-annotation = pd.read_csv('data/l1000_lvl3_withsignor-Annotation.tsv', sep='\t')
+networkList, nodeNames, modeOfAction = bionetwork.loadNetwork('../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Model.tsv')
+annotation = pd.read_csv('../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Annotation.tsv', sep='\t')
 uniprot2gene = dict(zip(annotation['code'], annotation['name']))
 bionetParams = bionetwork.trainingParameters(iterations = 120, clipping=1, targetPrecision=1e-6, leak=0.01) # for A549 was 120
 spectralCapacity = np.exp(np.log(1e-2)/bionetParams['iterations'])
 ### Load the data
-drugInput = pd.read_csv('data/L1000_lvl3_allcells-conditions_drugs.tsv', sep='\t', low_memory=False, index_col=0)
+drugInput = pd.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-conditions_drugs.tsv', sep='\t', low_memory=False, index_col=0)
 drugSmiles = drugInput.columns.values
-drugTargets = pd.read_csv('data/L1000_lvl3_allcells-drugs_targets.tsv', sep='\t', low_memory=False, index_col=0)
-TFOutput = pd.read_csv('data/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv', sep='\t', low_memory=False, index_col=0)
-cellInput = pd.read_csv('data/L1000_lvl3-conditions_cells.tsv', sep='\t', low_memory=False, index_col=0)
+drugTargets = pd.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-drugs_targets.tsv', sep='\t', low_memory=False, index_col=0)
+TFOutput = pd.read_csv('../preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv', sep='\t', low_memory=False, index_col=0)
+cellInput = pd.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3-conditions_cells.tsv', sep='\t', low_memory=False, index_col=0)
 TFOutput=TFOutput.loc[cellInput[cellInput[cell]==1].index,:]
 drugInput=drugInput.loc[cellInput[cellInput[cell]==1].index,:]
 #Subset input and output to intersecting nodes
@@ -150,7 +150,7 @@ if ConvertToEmpProb==True:
     TFOutput = 1/(1+np.exp(-TFOutput))
 #make sure they are on the same order
 drugTargets = drugTargets.loc[drugInput.columns.values,:]
-drugSim = pd.read_csv('../out_lvl3_similaritiess.csv',index_col=0)
+drugSim = pd.read_csv('../preprocessing/preprocessed_data/ChemicalSims/out_lvl3_similaritiess.csv',index_col=0)
 drugSim = drugSim.loc[drugInput.columns.values,drugInput.columns.values]
 drugSim = torch.tensor(drugSim.values.copy(), dtype=torch.double)
 
@@ -874,54 +874,3 @@ fig.savefig(ensembles_path + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_ge
             bbox_inches='tight', dpi=600)
 
 print2log(all_sources_counted)
-
-#%%
-# ### See using the most frequent network if I can predict the activity of TF
-# def activationFunction(x,leak):
-#     x = np.where(x < 0, x * leak, x)
-#     x = np.where(x > 0.5, 1-0.25/x, x)
-#     return x
-
-# df = NetworkPandas_frequent.loc[:, ['name_source','name_target','weight']]
-# small_net = nx.from_pandas_edgelist(df,source='name_source', target='name_target', edge_attr='weight', create_using=nx.DiGraph())
-# frequent_nodes = list(small_net.nodes())
-# mapping_to_new_ids = np.arange(0,len(frequent_nodes))
-# targets_of_interest = ['KIT']
-# targets_of_interest_id = np.array([np.where(np.array(frequent_nodes)==tar)[0][0] for tar in targets_of_interest])
-# new_map = pd.DataFrame({'node_name' : frequent_nodes ,'node_id':mapping_to_new_ids})
-# A_small = nx.adjacency_matrix(small_net).toarray()
-# ## Initialize node states
-# # Get also initial bias as trained in the model
-# original_ids = new_map.merge(df_map.rename({'name': 'node_name'}, axis=1), on='node_name', how='left')
-# begin_state = np.expand_dims(mean_bias[original_ids.id],axis=1)
-# # begin_state = np.where(begin_state < 0, 0, begin_state)
-# # begin_state = np.where(begin_state > 0.5, 1-0.25/begin_state, begin_state)
-# X_small = np.zeros((A_small.shape[0],1)) + begin_state
-# X_small[targets_of_interest_id,:] = -1
-
-
-# ind = np.where(np.array(list(small_net.nodes()))==TF_gene)
-# X_small[ind,:] = 1
-# # run mini-lembas
-# xhat = X_small.copy()
-# for i in range(bionetParams['iterations']):
-#     print2log(xhat[ind,:])
-#     if i > 40:
-#         if i > 41:
-#             if np.sum(np.abs(xhat - xhatBefore)) < 1e-6:
-#                 break
-#         xhatBefore = xhat.copy()
-#     xhat = A_small.dot(xhat)
-#     #xhat += begin_state
-#     # xhat = activationFunction(xhat, bionetParams['leak'])
-# # Look at the activity of TF
-# print2log(xhat[ind,:])
-
-# # mean_bias = np.zeros((len(nodeNames)))
-# # for i in range(numberOfModels):
-# #     model = torch.load(inputPath+str(i)+".pt")
-# #     resetGradients(model)
-# #     model.eval()
-# #     mean_bias = mean_bias + model.network.bias.detach().numpy().squeeze()
-# # mean_bias = mean_bias/numberOfModels
-# # mean_bias[original_ids.id]

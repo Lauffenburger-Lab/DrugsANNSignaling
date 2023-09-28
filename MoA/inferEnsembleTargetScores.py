@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Oct 27 05:52:42 2022
-
-@author: nmeim
-"""
-
 import torch
 import pandas as pd
 import numpy as np
@@ -31,7 +24,7 @@ logger = logging.getLogger()
 print2log = logger.info
 
 parser = argparse.ArgumentParser(prog='Cell-line simulation')
-parser.add_argument('--ensembles_path', action='store', default="CVL1000_Paper/FinalEnsemble/")
+parser.add_argument('--ensembles_path', action='store', default="../results/FinalEnsemble/")
 parser.add_argument('--outPattern', action='store', default="InteractionScores/l1000_modeltype4_lamda6")
 parser.add_argument('--inputPattern', action='store', default="l1000_latest_modeltype4_model")
 parser.add_argument('--cell_line', action='store', default="VCAP")
@@ -52,17 +45,17 @@ inputPath = ensembles_path + inputPattern
 
 ### Load network
 #Load network
-networkList, nodeNames, modeOfAction = bionetwork.loadNetwork('data/l1000_lvl3_withsignor-Model.tsv')
-annotation = pd.read_csv('data/l1000_lvl3_withsignor-Annotation.tsv', sep='\t')
+networkList, nodeNames, modeOfAction = bionetwork.loadNetwork('../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Model.tsv')
+annotation = pd.read_csv('../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Annotation.tsv', sep='\t')
 uniprot2gene = dict(zip(annotation['code'], annotation['name']))
 bionetParams = bionetwork.trainingParameters(iterations = 120, clipping=1, targetPrecision=1e-6, leak=0.01) # for a375 was 120
 spectralCapacity = np.exp(np.log(1e-2)/bionetParams['iterations'])
 ### Load the data
-drugInput = pd.read_csv('data/L1000_lvl3_allcells-conditions_drugs.tsv', sep='\t', low_memory=False, index_col=0)
+drugInput = pd.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-conditions_drugs.tsv', sep='\t', low_memory=False, index_col=0)
 drugSmiles = drugInput.columns.values
-drugTargets = pd.read_csv('data/L1000_lvl3_allcells-drugs_targets.tsv', sep='\t', low_memory=False, index_col=0)
-TFOutput = pd.read_csv('data/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv', sep='\t', low_memory=False, index_col=0)
-cellInput = pd.read_csv('data/L1000_lvl3-conditions_cells.tsv', sep='\t', low_memory=False, index_col=0)
+drugTargets = pd.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-drugs_targets.tsv', sep='\t', low_memory=False, index_col=0)
+TFOutput = pd.read_csv('../preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv', sep='\t', low_memory=False, index_col=0)
+cellInput = pd.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3-conditions_cells.tsv', sep='\t', low_memory=False, index_col=0)
 TFOutput=TFOutput.loc[cellInput[cellInput[cell]==1].index,:]
 drugInput=drugInput.loc[cellInput[cellInput[cell]==1].index,:]
 #Subset input and output to intersecting nodes
@@ -81,7 +74,7 @@ if ConvertToEmpProb==True:
     TFOutput = 1/(1+np.exp(-TFOutput))
 #make sure they are on the same order
 drugTargets = drugTargets.loc[drugInput.columns.values,:]
-drugSim = pd.read_csv('../out_lvl3_similaritiess.csv',index_col=0)
+drugSim = pd.read_csv('../preprocessing/preprocessed_data/ChemicalSims/out_lvl3_similaritiess.csv',index_col=0)
 drugSim = drugSim.loc[drugInput.columns.values,drugInput.columns.values]
 drugSim = torch.tensor(drugSim.values.copy(), dtype=torch.double)
 
@@ -98,19 +91,19 @@ for i in range(numberOfModels):
     ig = IntegratedGradients(model.drugLayer)
 
     print2log('Begin score calculation with integrated gradients for model %s'%i)
-    # # Per output latent variable input importance translation captum
-    # # 1st dimesion input
-    # # 2nd dimesion output
-    # scores = torch.zeros (model.drugLayer.mask.T.shape)
-    # for target in range(scores.shape[1]):
-    #     attr, delta = ig.attribute(torch.eye(X.shape[1]).double(),target=target,n_steps=100,return_convergence_delta=True)
-    #     scores[:,target] = torch.diagonal(attr, 0)
+    # Per output latent variable input importance translation captum
+    # 1st dimesion input
+    # 2nd dimesion output
+    scores = torch.zeros (model.drugLayer.mask.T.shape)
+    for target in range(scores.shape[1]):
+        attr, delta = ig.attribute(torch.eye(X.shape[1]).double(),target=target,n_steps=100,return_convergence_delta=True)
+        scores[:,target] = torch.diagonal(attr, 0)
 
-    # interactions = pd.DataFrame(scores.numpy())
-    # interactions.index = drugInput.columns
-    # interactions.columns = drugTargets.columns
-    # interactions.to_csv(outPattern+'_interactionScores_'+str(i)+'.csv')
-    interactions = pd.read_csv(outPattern+'_interactionScores_'+str(i)+'.csv',index_col=0)
+    interactions = pd.DataFrame(scores.numpy())
+    interactions.index = drugInput.columns
+    interactions.columns = drugTargets.columns
+    interactions.to_csv(outPattern+'_interactionScores_'+str(i)+'.csv')
+    # interactions = pd.read_csv(outPattern+'_interactionScores_'+str(i)+'.csv',index_col=0)
 
     scores = torch.tensor(interactions.values)
     df_mask = pd.DataFrame(mask.numpy())

@@ -3,7 +3,7 @@ Github repository of the study:
 > Inference of the effects of drugs on cell signaling using machine learning <br>
 > Nikolaos Meimetis<sup>1</sup>, Douglas A. Lauffenburger<sup>1</sup>, Avlant Nilsson<sup>1,2,3*</sup>
 > 1) Department of Biological Engineering, Massachusetts Institute of Technology, Cambridge, MA 02139, USA
-> 2) Department of Cell and Molecular Biology, Karolinska Institutet, Stockholm, SE 171 77, Sweden
+> 2) Department of Cell and Molecular Biology, SciLifeLab, Karolinska Institutet, Sweden
 > 3) Department of Biology and Biological Engineering, Chalmers University of Technology, Gothenburg, SE 41296, Sweden
 > * Corresponding author, avlant.nilsson@ki.se
 
@@ -13,7 +13,7 @@ This repository is administered by @NickMeim. For questions contact meimetis@mit
 
 **Trained models of this study are too big to be uploaded here and are available upon reasonable request.**
 
-Mutations in proteins or genes can lead to dysregulated intracellular signaling in cells, which can push them to detrimental states for the human body. Many drug perturbations are designed to target specific signaling nodes in the intracellular network of proteins, or transcription factors, to regulate signaling and induce a desired effect through a signaling cascade. However, drugs have often many off-target effects, functioning this way through a different mechanism of action than what is anticipated, leading to failing clinical trials. Here we developed an ensemble artificial neural network approach, incorporating simultaneously both simulation of intracellular signaling and drug-target interaction inference, to predict the transcriptional profile of cell lines and explore their mechanism of action. Applied to transcriptomic gene expression data, it outperforms other standard machine learning approaches in predicting transcription factors’ activity while it can retrieve almost all known drug-target interactions and infer many more. The framework has the additional ability to provide mechanistic explanations of the off-target effects of drugs.
+Many diseases emerge from dysregulated cellular signaling, and drugs are often designed to target specific nodes in the signaling network of the cell e.g. proteins, or transcription factors. However, off-target effects are common and can ultimately result in failed clinical trials. Computational modeling of the cell’s transcriptional response to drugs could help expand our understanding of their mechanisms of action. Here we develop such an approach based on ensembles of artificial neural networks, that simultaneously infer drug-target interactions and their downstream effects on intracellular signaling. Applied to gene expression data from different cell lines, it outperforms basic machine learning approaches in predicting transcription factors’ activity, while recovering most known drug-target interactions and inferring many new. We validate the drug-target predictions via augmentation with an independent dataset. As a case study, we explore the framework's mechanistic explanations of the off-target effects of Lestaurtinib. The model proposes an inhibition of the FOXM1 transcription factor through off-target inhibition of CDK2, which corroborates earlier findings in the literature. Our approach enhances the understanding of drug signaling and therapeutic design.
 
 The current repository contains code for:
 1. Initial evaluation of the quality and preprocessing of the data.
