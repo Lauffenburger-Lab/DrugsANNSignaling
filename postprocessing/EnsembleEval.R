@@ -169,7 +169,7 @@ p7 <- ggplot(df_corr,aes(x=tf_rank,y=r,color=cell)) + geom_point() + geom_smooth
                                                                                                           linetype = 'dashed', 
                                                                                                           linewidth=0.25)) +
   scale_y_continuous(limits = c(-0.85,0.85),breaks = seq(-0.85,0.85,0.2))
-png('../article_supplementary_info/suppl_figure4B.png',
+png('../article_supplementary_info/suppl_figure5B.png',
     units = 'in',width = 12,height = 12,res = 600)
 print(p7)
 dev.off()
@@ -192,7 +192,7 @@ p8 <- ggplot(cutPear,aes(x=thresh,y=r,color=cell)) + geom_point() + geom_smooth(
                                                                                                           linewidth=0.25)) +
   scale_y_continuous(limits = c(0,0.8),breaks = seq(0,0.8,0.1))
 print(p8)
-png('../article_supplementary_info/suppl_figure4A.png'
+png('../article_supplementary_info/suppl_figure5A.png'
     ,units = 'in',width = 12,height = 12,res = 600)
 print(p8)
 dev.off()
@@ -231,7 +231,7 @@ df_corr_train <- all_corr_train %>% gather('TF','r',-model,-cell,-no)
 df_corr_train <- df_corr_train %>% group_by(cell,no) %>%  mutate(tf_rank=rank(-r)) %>% ungroup()
 df_corr_train <- df_corr_train %>% mutate(tf_rank=100 * tf_rank/length(unique(df_corr_train$TF)))
 df_corr_train <- df_corr_train %>% filter(tf_rank<=5)
-saveRDS(tfs_to_keep,'Model/CVL1000_Paper/FinalEnsemble/EstimateEnsembles/tfs_to_keep_10perc.rds')
+# saveRDS(tfs_to_keep,'Model/CVL1000_Paper/FinalEnsemble/EstimateEnsembles/tfs_to_keep_10perc.rds')
 tfs_to_keep <- df_corr_train %>% select(no,cell,TF) %>% unique()
 df_corr_val <- left_join(tfs_to_keep,df_corr_val)
 df_corr_val <- df_corr_val %>% select(-no) %>% unique()

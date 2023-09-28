@@ -74,6 +74,9 @@ cmap_drugs_unnested <- cmap_drugs_unnested %>% unique()
 ### SOS : The following commented code was used to parse the xml file of DrugBank.
 ### However it takes a long time to execute the code.
 ### You can instead skip and load the following .rds file.
+### Additionally it was developed with dbparser 2.0.1 and
+### information from here : https://cran.r-project.org/web/packages/dbparser/vignettes/dbparser.html
+
 df_drugbank <- readRDS('../data/df_drugbank.rds')
 # dvobj <- parseDrugBank(db_path= "../data/full database.xml",
 #                        drug_options= drug_node_options(),

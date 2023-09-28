@@ -6,6 +6,7 @@ data/GSE92742_Broad_LINCS_inst_info.txt
 data/GSE92742_Broad_LINCS_sig_info.txt
 data/GSE92742_Broad_LINCS_sig_metrics.txt
 data/omnipath_webservice_interactions__recent.tsv
+data/full database.xml
 preprocessing/preprocessed_data/l1000_all_genes_lvl3_drugs_with_targets_exemplar.rds
 preprocessing/preprocessed_data/TF_activities/TFs_random_variances_all.rds
 preprocessing/preprocessed_data/TF_activities/l1000_allgenes_lvl3_tfs.tsv

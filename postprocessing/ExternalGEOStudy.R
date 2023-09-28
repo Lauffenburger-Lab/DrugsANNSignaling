@@ -13,11 +13,9 @@ library(ggplot2)
 library(ggpubr)
 
 # Load data
-geo<-  getGEO(GEO = 'GSE31534', AnnotGPL = TRUE)
-raw <- geo[["GSE31534_series_matrix.txt.gz"]]@assayData[['exprs']]
-pheno <- geo[["GSE31534_series_matrix.txt.gz"]]@phenoData@data
+# You can downlaod the file first from GEO
 list_files <- list.files('GSE31534/')
-raw <- ReadAffy(celfile.path = "GSE31534",filenames = list_files,
+raw <- ReadAffy(celfile.path = "../../GSE31534",filenames = list_files,
                 phenoData = pheno)
 exprs_rma  <- affy::rma(raw)
 cols <- data.frame(samples=colnames(exprs(exprs_rma)))
@@ -49,7 +47,7 @@ gex_rma <- aggregate(gex_rma[,1:(ncol(gex_rma)-1)],by=list(gex_rma$SYMBOL),FUN=m
 gex_rma <- gex_rma %>% column_to_rownames('Group.1')
 
 # Calculate TF activity
-dorotheaData = read.table('TF activities/annotation/dorothea.tsv', sep = "\t", header=TRUE)
+dorotheaData = read.table('../data/dorothea.tsv', sep = "\t", header=TRUE)
 confidenceFilter = is.element(dorotheaData$confidence, c('A', 'B'))
 dorotheaData = dorotheaData[confidenceFilter,]
 
@@ -75,19 +73,11 @@ ggdotplot(results,x='knockdown',y='value',fill='knockdown') +
   theme(text=element_text(size=20),
         axis.text.x = element_text(angle=90),
         legend.position='none')
-#   stat_compare_means(comparisons = list(c('CDK2','CONTROL'),
-#                                         c('CDK2','untreated'),
-#                                         c('FOXM1','CONTROL'),
-#                                         c('FOXM1','untreated')),
-#                      method='wilcox.test',size = 7)
-# 
-#   
-#   stat_compare_means(method='kruskal.test',size = 7,label.y = 0.78)
-# stat.test <- lembas_noisy %>% 
-#   rstatix::wilcox_test(r ~ cell, comparisons = list(c('A375','HA1E')))
-# p3_2_3 <- p3_2_3  + stat_pvalue_manual(stat.test, label = "Wilcox test p = {p}",y.position = 0.75,size = 7)
+stat.test <- results %>% mutate(group = ifelse(knockdown %in% c('FOXM1','CDK2'),'FOXM1 KD-like','control group')) %>%
+  rstatix::wilcox_test(value ~ group)
+print(stat.test)
 
-ggsave('Model/CVL1000_Paper/ExperimentalValidation/geo_kos_foxm1.eps',
+ggsave('../figures/figure4A.eps',
        device=cairo_ps,
        scale = 1,
        width = 6,

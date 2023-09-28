@@ -78,6 +78,7 @@ In a quick overview, the following R libraries and versions (**although any vers
 23. [hgu133a.db](https://bioconductor.org/packages/release/data/annotation/html/hgu133a.db.html) 3.13.0
 24. [limma](https://bioconductor.org/packages/release/bioc/html/limma.html) 3.48.3
 25. [affy](https://www.bioconductor.org/packages/release/bioc/html/affy.html) 1.70.0
+26. [dbparser](https://cran.r-project.org/web/packages/dbparser/vignettes/dbparser.html) 2.0.1
 
 **Python dependencies**: 
 First, install conda (anaconda) environment on your computer, and then you can use the commands **in a bash-terminal** after the list of libraries.

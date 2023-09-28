@@ -8,24 +8,16 @@ library(caret)
 # Load data---------
 
 # Load cmap data
-drug_targets <- read.delim('Model/data/L1000_lvl3_allcells-drugs_targets.tsv',row.names = 1)
-#cell_lines <- c('VCAP','A549','A549','HCC515','HT29','HA1E','HEPG2','MCF7','PC3')
-#drug_targets <-  readRDS('drug_targets_space.rds')
-merged_interactions_all <- data.table::fread('Model/CVL1000_Paper/A549_ensembles/all_merged_interactions_drugs.csv',header=T) %>% column_to_rownames('V1')
+drug_targets <- read.delim('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-drugs_targets.tsv',row.names = 1)
+merged_interactions_all <- data.table::fread('../results/A549_ensembles/all_merged_interactions_drugs.csv',header=T) %>% column_to_rownames('V1')
 i <- 1
 merged_interactions <- merged_interactions_all %>% filter(model_no==i-1) %>% dplyr::select(-model_no)
 drug_targets <- drug_targets[which(rownames(drug_targets) %in% merged_interactions$drug),which(colnames(drug_targets) %in% merged_interactions$variable)]
-
-#cell <- 'A549'
-data_cmap <- readRDS("all_cmap_sigs_with_pert_info.rds")
-#conditions <- read.delim('Model/data/L1000_lvl3_allcells-conditions_drugs.tsv',row.names = 1)
-TF_activities_2 <- read.delim('Model/data/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv',row.names = 1)
+data_cmap <- readRDS("../preprocessing/preprocessed_data/all_cmap_sigs_with_pert_info.rds")
+TF_activities_2 <- read.delim('../preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv',row.names = 1)
 data_cmap <- data_cmap %>% filter(sig_id %in% rownames(TF_activities_2))
-#data_cmap <- data_cmap %>% filter(cell_id %in% cell_lines) %>% filter(canonical_smiles %in% rownames(drug_targets))
-#data_cmap <- data_cmap %>% filter(cell_id==cell) %>% filter(canonical_smiles %in% rownames(drug_targets))
 data_cmap <- data_cmap %>% filter(canonical_smiles %in% rownames(drug_targets))
 gc()
-
 
 # Load lethality/viability----------------------
 # PRISM has sensitivity data
@@ -68,14 +60,6 @@ pert_info <- pert_info %>% filter(drugid %in% drug_info$drugid)
 # filter sensitivity data
 cell_line_sensitivity <- cell_line_sensitivity[rownames(pert_info),]
 gc()
-
-## MERGE AND MAKE GROUP BY DRUG AND AVERAGE MULTIPLE REPLICATES
-#pert_info <- pert_info %>% filter(cellid=='A549') # keep only A549
-#drug_info <- drug_info %>% filter(drugid %in% pert_info$drugid)
-#drug_info <- drug_info %>% filter(cell_id=='A549')
-#pert_info <- pert_info %>% filter(drugid %in% drug_info$drugid)
-#cell_line_sensitivity <- cell_line_sensitivity[rownames(pert_info),]
-
 # filter to keep drugs that are in our data
 cell_line_sensitivity$EC50 <- log10(cell_line_sensitivity$EC50)
 drug_info <- drug_info %>% filter(smiles %in% rownames(drug_targets))
@@ -107,8 +91,8 @@ train_pval <- NULL
 test_pval <- NULL
 no_models <- 50
 for (th in 1:no_models){
-  drug_targets <- read.delim('Model/data/L1000_lvl3_allcells-drugs_targets.tsv',row.names = 1)
-  merged_interactions_all <- data.table::fread('Model/CVL1000_Paper/A549_ensembles/all_merged_interactions_drugs.csv',header=T) %>% column_to_rownames('V1')
+  drug_targets <- read.delim('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-drugs_targets.tsv',row.names = 1)
+  merged_interactions_all <- data.table::fread('../results/A549_ensembles/all_merged_interactions_drugs.csv',header=T) %>% column_to_rownames('V1')
   #drug_targets_prior <- as.data.frame(drug_targets) %>% rownames_to_column('drug') %>% 
   #  gather('variable','Prior knowledge',-drug)
   #merged_interactions_all <- merged_interactions_all %>% select(-`Prior knowledge`)
@@ -120,7 +104,7 @@ for (th in 1:no_models){
   merged_interactions_all <- merged_interactions_all %>% group_by(drug,variable) %>% 
     mutate(model_counts = sum(Inferred==1)) %>% ungroup()
   merged_interactions_all <- merged_interactions_all %>% mutate(model_counts=model_counts/no_models)
-  print(all(merged_interactions_all %>% filter(model_counts==0) %>% mutate(logic = (Inferred==`Prior knowledge`)) %>% select(logic)))
+  # print(all(merged_interactions_all %>% filter(model_counts==0) %>% mutate(logic = (Inferred==`Prior knowledge`)) %>% select(logic)))
   merged_interactions_all <- merged_interactions_all %>% mutate(Inferred = ifelse(model_counts>=th/no_models,1,0))
   inferred_interactions <- merged_interactions_all %>% select(drug,variable,Inferred)
   inferred_interactions <- inferred_interactions %>% unique()
@@ -176,6 +160,7 @@ for (th in 1:no_models){
   res_train_new <- train_data_new %>% mutate(predicted=y_train_new)
   y_new <- predict(mdl,newdata = test_data_new)
   test_corr[th] <- cor(y_new,test_data_new$EC50)
+  print(paste0('Finished model ',th))
 }
 plot(seq(1:no_models)/no_models,train_corr)
 plot(seq(1:no_models)/no_models,test_corr)
@@ -183,7 +168,7 @@ results_ensembles <- data.frame(frequency = seq(1:no_models)/no_models,
                                 train= train_corr,
                                 test=test_corr)
 results_ensembles <- results_ensembles %>% gather('data','r',-frequency)
-saveRDS(results_ensembles,'viability_results_analysis.rds')
+saveRDS(results_ensembles,'../results/A549_viability_results_analysis.rds')
 ggplot(results_ensembles,aes(x=frequency,y=r,color=data)) + geom_point() + geom_line()+
   ggtitle('Performance of RF models in predicting lethality') + ylim(c(0.85,1))+
   theme(title  = element_text(hjust=0.5))+
@@ -192,7 +177,7 @@ ggplot(results_ensembles,aes(x=frequency,y=r,color=data)) + geom_point() + geom_
   theme(text=element_text(family = 'Arial',size=24),
         plot.title  = element_text(hjust=0.5),
         legend.position = 'right' )
-ggsave('../MIT/LauffenburgerLab/drugLembasPaper/supple_fig10.png',
+ggsave('../article_supplementary_info/supple_fig11.png',
        scale = 1,
        width = 12,
        height = 12,
@@ -200,10 +185,10 @@ ggsave('../MIT/LauffenburgerLab/drugLembasPaper/supple_fig10.png',
        dpi = 600)
 
 # load drug target data
-drug_targets <- read.delim('Model/data/L1000_lvl3_allcells-drugs_targets.tsv',row.names = 1)
+drug_targets <- read.delim('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-drugs_targets.tsv',row.names = 1)
 no_models <- 50
 th <- 44
-merged_interactions_all <- data.table::fread('Model/CVL1000_Paper/A549_ensembles/all_merged_interactions_drugs.csv',header=T) %>% column_to_rownames('V1')
+merged_interactions_all <- data.table::fread('../results/A549_ensembles/all_merged_interactions_drugs.csv',header=T) %>% column_to_rownames('V1')
 #drug_targets_prior <- as.data.frame(drug_targets) %>% rownames_to_column('drug') %>% 
 #  gather('variable','Prior knowledge',-drug)
 #merged_interactions_all <- merged_interactions_all %>% select(-`Prior knowledge`)
@@ -276,7 +261,7 @@ ggscatter(res_train_new,x='predicted',y='EC50',cor.coef = T,rug = T,cor.coef.siz
   geom_abline(intercept = 0,slope=1,linetype=2,color='red',linewidth=2)+
   theme(text=element_text(size=24,family='Arial'),
         plot.title = element_text(hjust = 0.5))
-ggsave('../MIT/LauffenburgerLab/drugLembasPaper/supple_fig11A.eps',
+ggsave('../MIT/LauffenburgerLab/drugLembasPaper/supple_fig12A.eps',
        device = cairo_ps,
        scale = 1,
        width = 12,
@@ -291,7 +276,7 @@ ggscatter(res_test_new,x='predicted',y='EC50',cor.coef = T,rug = T,cor.coef.size
   geom_abline(intercept = 0,slope=1,linetype=2,color='red',linewidth=2)+
   theme(text=element_text(size=24,family='Arial'),
         plot.title = element_text(hjust = 0.5))
-ggsave('../MIT/LauffenburgerLab/drugLembasPaper/supple_fig11B.eps',
+ggsave('../MIT/LauffenburgerLab/drugLembasPaper/supple_fig12B.eps',
        device = cairo_ps,
        scale = 1,
        width = 12,
@@ -327,7 +312,7 @@ ggscatter(res_train,x='predicted',y='EC50',cor.coef = T,rug = T,cor.coef.size = 
   geom_abline(intercept = 0,slope=1,linetype=2,color='red',linewidth=2)+
   theme(text=element_text(size=24,family='Arial'),
         plot.title = element_text(hjust = 0.5))
-ggsave('../MIT/LauffenburgerLab/drugLembasPaper/supple_fig11C.eps',
+ggsave('../MIT/LauffenburgerLab/drugLembasPaper/supple_fig12C.eps',
        device = cairo_ps,
        scale = 1,
        width = 12,
@@ -342,7 +327,7 @@ ggscatter(res_test,x='predicted',y='EC50',cor.coef = T,rug = T,cor.coef.size = 1
   geom_abline(intercept = 0,slope=1,linetype=2,color='red',linewidth=2)+
   theme(text=element_text(size=24,family='Arial'),
         plot.title = element_text(hjust = 0.5))
-ggsave('../MIT/LauffenburgerLab/drugLembasPaper/supple_fig11D.eps',
+ggsave('../MIT/LauffenburgerLab/drugLembasPaper/supple_fig12D.eps',
        device = cairo_ps,
        scale = 1,
        width = 12,
@@ -359,16 +344,16 @@ ggscatter(res,x='predicted',y='EC50',color='point',cor.coef = T,rug = T) +
 
 
 ### See in drugs with large off-targets--------------------------
-performance <- data.table::fread('Model/CVL1000_Paper/A549_ensembles/meanCorrPerTFEnsembleVal_lamda6.csv',
+performance <- data.table::fread('../results/A549_ensembles/meanCorrPerTFEnsembleVal_lamda6.csv',
                                  header=T)
 performance <- performance %>% dplyr::select(-model) %>% unique()
 performance <- performance %>% group_by(TF) %>% mutate(mean_r=mean(r)) %>%
   ungroup() %>% dplyr::select(-cell,-r) %>% unique()
-base_cell_performance <- data.table::fread('Model/CVL1000_Paper/A549_ensembles/A549TrainEnsemblePerformance.csv')
+base_cell_performance <- data.table::fread('../results/A549_ensembles/A549TrainEnsemblePerformance.csv')
 colnames(base_cell_performance)[1] <- 'TF'
-Delta <- data.table::fread('Model/CVL1000_Paper/A549_ensembles/DeltaTF1.csv',header=T)
+Delta <- data.table::fread('../results/A549_ensembles/DeltaTF1.csv',header=T)
 # Load TF activities
-TFoutput <- read.delim('Model/data/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv') %>% filter(X %in% Delta$V1) %>%
+TFoutput <- read.delim('../preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv') %>% filter(X %in% Delta$V1) %>%
   column_to_rownames('X') %>% rownames_to_column('sample')
 gc()
 TFoutput <- TFoutput %>% gather('TF','activity',-sample)  #%>% group_by(TF) %>% 
@@ -381,11 +366,11 @@ df <- left_join(df,performance)
 df <- left_join(df,base_cell_performance)
 df <- df %>% mutate(score=0.5*(mean_r+r))
 # Load conditions to get rid of DMSO
-conditions <- data.table::fread('Model/data/L1000_lvl3_allcells-conditions_drugs.tsv',sep = "\t") %>% column_to_rownames('V1')
+conditions <- data.table::fread('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-conditions_drugs.tsv',sep = "\t") %>% column_to_rownames('V1')
 conditions <- conditions %>% rownames_to_column('sample') %>% gather('drug','value',-sample) %>% filter(value>0) %>%
   select(-value) %>% unique()
 conditions <- conditions %>% filter(sample %in% df$sample) %>% filter(drug!='CS(C)=O')
-annotation <- read.delim('Model/data/l1000_lvl3_withsignor-Annotation.tsv') %>% dplyr::select(c('TF'='code'),name)
+annotation <- read.delim('../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Annotation.tsv') %>% dplyr::select(c('TF'='code'),name)
 annotation <- annotation %>% filter(TF %in% df$TF)
 df <- left_join(df,annotation)
 df <- left_join(df,conditions)
