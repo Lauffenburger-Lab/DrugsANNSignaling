@@ -26,7 +26,7 @@ library(XML)
 # df_drugbank <- readRDS('../data/df_drugbank.rds')
 
 
-### Load drug target data and augment drug target interaction space with drugbank---------
+### Load drug target data and augment drug target interaction space with drugbank-------------------------------------------------
 cmap_drugs <- readRDS('../preprocessing/preprocessed_data/l1000_drugs_with_targets_all.rds')
 annot <- read.delim('../data/uniprot-reviewed_yes+AND+organism__Homo+sapiens+(Human)+[9606]_.tab')
 annot <- annot %>% select(Entry,c('Target'=Gene.names...primary..)) %>% unique()
@@ -72,26 +72,27 @@ cmap_drugs_unnested <- cmap_drugs_unnested %>% unique()
 ## Manually add dmso from drugbank and also add more targets for other drugs too
 
 ### SOS : The following commented code was used to parse the xml file of DrugBank.
-### Unfortunately this read_drugbank_xml_db function is not supported anymore in the dbparser library
-### Instead we provide the extracted file in .rds format in the data folder. 
-### We provided the code for transparency and completeness ,
-### But please skip the commented lines and just read the .rds file.
+### However it takes a long time to execute the code.
+### You can instead skip and load the following .rds file.
 df_drugbank <- readRDS('../data/df_drugbank.rds')
-#read_drugbank_xml_db("../../full database.xml")
-#drugs <- drugs()
-#snp_effects <- drugs$snp_effects
-#drug_interactions <- drugs$interactions
-#snp_effects <- snp_effects %>% select(`protein-name`,`gene-symbol`,`uniprot-id`,`pubmed-id`,parent_key)
-#drug_interactions <- drug_interactions %>% select(-description)
-#drug_interactions <- left_join(drug_interactions,snp_effects)
-#df_drugbank <- drugs$general_information
-#df_drugbank <- left_join(df_drugbank,drug_interactions,by=c('primary_key'='drugbank-id','name'='name'))
-#df_drugbank$name <- tolower(df_drugbank$name)
-#df_drugbank <- df_drugbank %>%
+# dvobj <- parseDrugBank(db_path= "../data/full database.xml",
+#                        drug_options= drug_node_options(),
+#                        parse_salts= TRUE,
+#                        parse_products= TRUE,
+#                        references_options= references_node_options(),
+#                        cett_options= cett_nodes_options())
+# snp_effects <- dvobj$drugs$snp_effects
+# drug_interactions <- dvobj$drugs$drug_interactions
+# snp_effects <- snp_effects %>% select(`protein-name`,`gene-symbol`,`uniprot-id`,`pubmed-id`,parent_key)
+# drug_interactions <- drug_interactions %>% select(-description)
+# drug_interactions <- left_join(drug_interactions,snp_effects)
+# df_drugbank <- dvobj$drugs$general_information
+# df_drugbank <- left_join(df_drugbank,drug_interactions,by=c('primary_key'='drugbank-id','name'='name'))
+# df_drugbank$name <- tolower(df_drugbank$name)
+# df_drugbank <- df_drugbank %>%
 #  select(c('drugbank_id'='primary_key'),'name','cas_number',
-#         c('target_symbol'='gene-symbol'),c('target_uniprot'='uniprot-id')) %>% 
+#         c('target_symbol'='gene-symbol'),c('target_uniprot'='uniprot-id')) %>%
 #  filter(!is.na(target_symbol) | !is.na(target_uniprot)) %>% unique()
-
 df_drugbank_cmap <- left_join(cmap_drugs %>% select(-Target) %>% mutate(cmap_name=tolower(pert_iname)) %>% unique(),
                               df_drugbank,
                               by=c('pert_iname'='name')) %>%
@@ -107,11 +108,8 @@ df_drugbank_not_in_cmap <- df_drugbank %>% filter(!(name %in% tolower(cmap_drugs
   select(c('canonical_smiles'='name'),c('Entry'='target_uniprot')) %>% unique()
 
 drug_targets_space <- rbind(cmap_drugs_unnested,df_drugbank_cmap,df_drugbank_not_in_cmap) %>% unique()
-
-
 uniq_targets <- unique(drug_targets_space$Entry)
 binary_classes <- function(sig,df,targets){
-
   df <- df %>% select(canonical_smiles,Entry) %>% unique()
   df <- df %>% filter(canonical_smiles==sig)
   m <- as.matrix(df[,2])
