@@ -7,7 +7,7 @@ Github repository of the study:
 > 3) Department of Biology and Biological Engineering, Chalmers University of Technology, Gothenburg, SE 41296, Sweden
 > * Corresponding author, avlant.nilsson@ki.se
 
-doi: ----
+doi: https://doi.org/10.1101/2023.10.08.561429
 
 This repository is administered by @NickMeim. For questions contact meimetis@mit.edu
 
