@@ -187,6 +187,7 @@ for (i in 1:length(all_files)){
 }
 df_corr_val <- all_corr_val %>% gather('TF','r',-lamda,-cell)
 df_corr_val <- df_corr_val %>% group_by(lamda,cell) %>% mutate(mean_pear = mean(r)) %>% ungroup()
+df_corr_val_original <- df_corr_val %>% group_by(lamda,cell) %>% mutate(mean_pear = mean(r)) %>% ungroup()
 df_corr_val <- df_corr_val %>% select(-TF,-r) %>% unique()
 p3 <- ggboxplot(df_corr_val, x = "lamda", y = "mean_pear",add='jitter')+
   ggtitle('Average per TF pearson`s correlation across all TFs in diffent cell-lines for increasing level of regularization')+
@@ -212,9 +213,9 @@ p3_1 <- ggplot(df_corr_val %>% filter(!(lamda=='0' | lamda=='Inf')) %>% group_by
   scale_x_log10()+
   ggtitle('Average per TF pearson`s correlation across all TFs across all cell-lines')+
   xlab(expression(lambda)) + ylab('average pearson`s r') + 
-  theme_pubr(base_family = 'Arial',base_size = 24)+
-  theme(text = element_text(family = 'Arial',size=24),plot.title = element_blank(),
-        axis.title.x =  element_text(family = 'Arial',size=36),
+  theme_pubr(base_family = 'Arial',base_size = 28)+
+  theme(text = element_text(family = 'Arial',size=28),plot.title = element_blank(),
+        axis.title.x =  element_text(family = 'Arial',size=40),
         axis.title.y = element_blank(),
         plot.margin = margin(1,10,1,1, "mm")) +
   scale_y_continuous(limits = c(0,0.35))
@@ -222,8 +223,8 @@ print(p3_1)
 p3_2 <- ggboxplot(df_corr_val %>% filter(lamda=='0' | lamda=='Inf'), x = "lamda", y = "mean_pear",add='jitter')+
   ggtitle('Average per TF pearson`s correlation across all TFs in diffent cell-lines')+
   xlab(expression(lambda)) + ylab('average pearson`s r') + 
-  theme(text = element_text(family = 'Arial',size=24),plot.title = element_blank(),
-        axis.title.x =  element_text(family = 'Arial',size=36)) +#,axis.title.y = element_blank()) +
+  theme(text = element_text(family = 'Arial',size=28),plot.title = element_blank(),
+        axis.title.x =  element_text(family = 'Arial',size=40)) +#,axis.title.y = element_blank()) +
   scale_y_continuous(limits = c(0,0.35))
 stat.test <- df_corr_val %>% filter(lamda=='0' | lamda=='Inf') %>% 
   rstatix::wilcox_test(mean_pear ~ lamda, comparisons = list(c('0','Inf')))
