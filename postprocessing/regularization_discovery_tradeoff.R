@@ -68,7 +68,7 @@ p2_error_derived <- ggplot(rbind(regularization_errorbased %>% select(lamda,c('v
                                         linetype = 'dashed', 
                                         linewidth=0.25))
 print(p2_error_derived)
-ggsave('../article_supplementary_info/suppl_figure6B.eps',
+ggsave('../article_supplementary_info/suppl_figure7B.eps',
        plot = p2_error_derived,
        device = cairo_ps,
        scale = 1,
@@ -77,7 +77,7 @@ ggsave('../article_supplementary_info/suppl_figure6B.eps',
        units = "in",
        dpi = 600)
 
-ggsave('../article_supplementary_info/suppl_figure6A.eps',
+ggsave('../article_supplementary_info/suppl_figure7A.eps',
        plot = p2,
        device = cairo_ps,
        scale = 1,

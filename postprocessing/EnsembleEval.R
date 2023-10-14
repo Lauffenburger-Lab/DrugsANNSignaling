@@ -83,26 +83,28 @@ df_corr_train <- df_corr_train %>% group_by(model,cell) %>%  mutate(mean_r=mean(
 df_corr_train$model <- factor(df_corr_train$model,
                               levels = c('Individual models','Ensembles'))
 p3_1_1 <- ggboxplot(df_corr_train, x = "model", y = "r",add='jitter')+
-  ggtitle('Train performance comparison of individual runs and ennsemble prediction') +
-  theme(text = element_text(size=11),plot.title = element_text(hjust = 0.5)) +
-  xlab('model') + ylab('per TFs pearson`s r')+ scale_y_continuous(n.breaks = 10) +
+  ggtitle('Train performance of individual runs and ensemble predictions') +
+  theme(text = element_text(size=20),plot.title = element_text(hjust = 0.5)) +
+  xlab('model') + ylab('per TF pearson`s r')+ scale_y_continuous(n.breaks = 10) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=1,color='black')
 p3_1_1 <- p3_1_1 + stat_compare_means(comparisons = list(c('Individual models','Ensembles')),
                                       label = 'p.format',
                                       method = 'wilcox.test',
-                                      tip.length=0.05)
+                                      tip.length=0.05,
+                                      size=5)
 p3_1_2 <- ggboxplot(df_corr_train %>% select(model,mean_r) %>% unique(), x = "model", y = "mean_r",add='jitter')+
   ggtitle('') +
-  theme(text = element_text(size=11),plot.title = element_text(hjust = 0.5)) +
-  xlab('model') + ylab('average per TFs pearson`s r') + scale_y_continuous(n.breaks = 10) +
+  theme(text = element_text(size=20),plot.title = element_text(hjust = 0.5)) +
+  xlab('model') + ylab('average per TF pearson`s r') + scale_y_continuous(n.breaks = 10) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=1,color='black')
 p3_1_2 <- p3_1_2 + stat_compare_means(comparisons = list(c('Individual models','Ensembles')),
                                       label = 'p.format',
                                       method = 'wilcox.test',
-                                      tip.length=0.05)
+                                      tip.length=0.05,
+                                      size=5)
 print(p3_1_1/p3_1_2)
 
-png('../article_supplementary_info/suppl_figure_1A.png',units = 'in',width = 12,height = 12,res=600)
+png('../article_supplementary_info/suppl_figure_2A_training.png',units = 'in',width = 12,height = 12,res=600)
 print(p3_1_1/p3_1_2)
 dev.off()
 
@@ -114,26 +116,28 @@ df_corr_val <- df_corr_val %>% group_by(model,cell) %>%  mutate(mean_r=mean(r)) 
 df_corr_val$model <- factor(df_corr_val$model,
                               levels = c('Individual models','Ensembles'))
 p3_2_1 <- ggboxplot(df_corr_val, x = "model", y = "r",add='jitter')+
-  ggtitle('Validation performance comparison of individual runs and ennsemble prediction') +
-  theme(text = element_text(size=11),plot.title = element_text(hjust = 0.5)) +
-  xlab('model') + ylab('per TFs pearson`s r')+ scale_y_continuous(n.breaks = 10) +
+  ggtitle('Validation performance of individual runs and ensemble predictions') +
+  theme(text = element_text(size=20),plot.title = element_text(hjust = 0.5)) +
+  xlab('model') + ylab('per TF pearson`s r')+ scale_y_continuous(n.breaks = 10) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=1,color='black')
 p3_2_1 <- p3_2_1 + stat_compare_means(comparisons = list(c('Individual models','Ensembles')),
                                       label = 'p.format',
                                       method = 'wilcox.test',
-                                      tip.length=0.05)
+                                      tip.length=0.05,
+                                      size=5)
 p3_2_2 <- ggboxplot(df_corr_val %>% select(model,mean_r) %>% unique(), x = "model", y = "mean_r",add='jitter')+
   ggtitle('') +
-  theme(text = element_text(size=11),plot.title = element_text(hjust = 0.5)) +
-  xlab('model') + ylab('average per TFs pearson`s r') + scale_y_continuous(n.breaks = 10) +
+  theme(text = element_text(size=20),plot.title = element_text(hjust = 0.5)) +
+  xlab('model') + ylab('average per TF pearson`s r') + scale_y_continuous(n.breaks = 10) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=1,color='black')
 p3_2_2 <- p3_2_2 + stat_compare_means(comparisons = list(c('Individual models','Ensembles')),
                                       label = 'p.format',
                                       method = 'wilcox.test',
-                                      tip.length=0.05)
+                                      tip.length=0.05,
+                                      size=5)
 print(p3_2_1/p3_2_2)
 
-png('../article_supplementary_info/suppl_figure1B.png',units = 'in',width = 12,height = 12,res=600)
+png('../article_supplementary_info/suppl_figure2A.png',units = 'in',width = 12,height = 12,res=600)
 print(p3_2_1/p3_2_2)
 dev.off()
 
@@ -161,15 +165,15 @@ df_corr <- df_corr %>% group_by(cell,TF) %>%
   mutate(mean_rank = mean(tf_rank)) %>% 
   mutate(mean_r = mean(r)) %>% ungroup()
 p7 <- ggplot(df_corr,aes(x=tf_rank,y=r,color=cell)) + geom_point() + geom_smooth(color='black') +
-  xlab('% median rank based on performace in train') + ylab('per TF correlation in validation')+ 
+  xlab('% median rank based on performace in training set') + ylab('per TF correlation in validation')+ 
   theme_pubr() +
-  ggtitle('Ranking of best fitted TFs VS validation performance') + theme(text = element_text(size=13),
+  ggtitle('Ranking of best fitted TFs VS validation performance') + theme(text = element_text(size=22),
                                                                           plot.title = element_text(hjust = 0.5),
                                                                           panel.grid.major = element_line(colour="black",
                                                                                                           linetype = 'dashed', 
                                                                                                           linewidth=0.25)) +
   scale_y_continuous(limits = c(-0.85,0.85),breaks = seq(-0.85,0.85,0.2))
-png('../article_supplementary_info/suppl_figure5B.png',
+png('../article_supplementary_info/suppl_figure6B.png',
     units = 'in',width = 12,height = 12,res = 600)
 print(p7)
 dev.off()
@@ -183,16 +187,16 @@ for (i in 1:length(thresholds)){
   cutPear <- rbind(cutPear,tmp)
 }
 p8 <- ggplot(cutPear,aes(x=thresh,y=r,color=cell)) + geom_point() + geom_smooth(se=F,color='black') +
-  xlab('% threshold') + ylab('average per TF correlation in validation')+ 
+  xlab('% median rank based on performace in training set') + ylab('average correlation in validation')+ 
   theme_pubr() +
-  ggtitle('Ranking of best fitted TFs VS validation performance') + theme(text = element_text(size=13),
+  ggtitle('Ranking of best fitted TFs VS validation performance') + theme(text = element_text(size=22),
                                                                           plot.title = element_text(hjust = 0.5),
                                                                           panel.grid.major = element_line(colour="black",
                                                                                                           linetype = 'dashed', 
                                                                                                           linewidth=0.25)) +
   scale_y_continuous(limits = c(0,0.8),breaks = seq(0,0.8,0.1))
 print(p8)
-png('../article_supplementary_info/suppl_figure5A.png'
+png('../article_supplementary_info/suppl_figure6A.png'
     ,units = 'in',width = 12,height = 12,res = 600)
 print(p8)
 dev.off()
@@ -230,14 +234,14 @@ df_corr_val <- all_corr_val %>% gather('TF','r',-model,-cell,-no)
 df_corr_train <- all_corr_train %>% gather('TF','r',-model,-cell,-no)
 df_corr_train <- df_corr_train %>% group_by(cell,no) %>%  mutate(tf_rank=rank(-r)) %>% ungroup()
 df_corr_train <- df_corr_train %>% mutate(tf_rank=100 * tf_rank/length(unique(df_corr_train$TF)))
-df_corr_train <- df_corr_train %>% filter(tf_rank<=5)
+df_corr_train <- df_corr_train %>% filter(tf_rank<=10)
 # saveRDS(tfs_to_keep,'Model/CVL1000_Paper/FinalEnsemble/EstimateEnsembles/tfs_to_keep_10perc.rds')
 tfs_to_keep <- df_corr_train %>% select(no,cell,TF) %>% unique()
 df_corr_val <- left_join(tfs_to_keep,df_corr_val)
 df_corr_val <- df_corr_val %>% select(-no) %>% unique()
 df_corr_train <- df_corr_train %>% select(-no) %>% unique()
 
-df_corr_train_ensemble_filtered <- df_corr_train_ensemble %>% filter(tf_rank<=5)
+df_corr_train_ensemble_filtered <- df_corr_train_ensemble %>% filter(tf_rank<=10)
 tfs_to_keep <- df_corr_train_ensemble_filtered %>% select(cell,TF) %>% unique()
 df_corr_val_ensemble_filtered <- left_join(tfs_to_keep,df_corr_val_ensemble)
 
@@ -252,83 +256,52 @@ df_corr_val$model <- factor(df_corr_val$model,
                               levels = c('Individual models','Ensembles'))
 
 p3_1_1 <- ggboxplot(df_corr_train, x = "model", y = "r",add='jitter')+
-  ggtitle('Comparison of individual runs and ennsemble predictions in top 5% best-fitted TFs') +
-  theme(text = element_text(size=11),plot.title = element_text(hjust = 0.5)) +
+    ggtitle('Individual runs and ensemble predictions in top 10% best-fitted TFs') +
+  theme(text = element_text(size=20),plot.title = element_text(hjust = 0.5)) +
   xlab('model') + ylab('per TFs pearson`s r')+ scale_y_continuous(n.breaks = 10) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=1,color='black')
 p3_1_1 <- p3_1_1 + stat_compare_means(comparisons = list(c('Individual models','Ensembles')),
                                       label = 'p.format',
                                       method = 'wilcox.test',
-                                      tip.length=0.05)
+                                      tip.length=0.05,
+                                      size=5)
 p3_1_2 <- ggboxplot(df_corr_train %>% select(model,mean_r) %>% unique(), x = "model", y = "mean_r",add='jitter')+
   ggtitle('') +
-  theme(text = element_text(size=11),plot.title = element_text(hjust = 0.5)) +
-  xlab('model') + ylab('average per TFs pearson`s r') + scale_y_continuous(n.breaks = 10) +
+  theme(text = element_text(size=20),plot.title = element_text(hjust = 0.5)) +
+  xlab('model') + ylab('average pearson`s r') + scale_y_continuous(n.breaks = 10) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=1,color='black')
 p3_1_2 <- p3_1_2 + stat_compare_means(comparisons = list(c('Individual models','Ensembles')),
                                       label = 'p.format',
                                       method = 'wilcox.test',
-                                      tip.length=0.05)
+                                      tip.length=0.05,
+                                      size=5)
 print(p3_1_1/p3_1_2)
-png('../article_supplementary_info/ensembles_vs_individual_runs_perTF_trainperformance_wellfitted5.png',units = 'in',width = 12,height = 12,res=600)
+png('../article_supplementary_info/suppl_figure_2B_training.png',units = 'in',width = 12,height = 12,res=600)
 print(p3_1_1/p3_1_2)
 dev.off()
 
 p3_2_1 <- ggboxplot(df_corr_val, x = "model", y = "r",add='jitter')+
-  ggtitle('Comparison of individual runs and ennsemble predictions in top 5% best-fitted TFs') +
-  theme(text = element_text(size=11),plot.title = element_text(hjust = 0.5)) +
+  ggtitle('Individual runs and ensemble predictions in top 10% best-fitted TFs') +
+  theme(text = element_text(size=20),plot.title = element_text(hjust = 0.5)) +
   xlab('model') + ylab('per TFs pearson`s r')+ scale_y_continuous(n.breaks = 10) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=1,color='black')
 p3_2_1 <- p3_2_1 + stat_compare_means(comparisons = list(c('Individual models','Ensembles')),
                                       label = 'p.format',
                                       method = 'wilcox.test',
-                                      tip.length=0.05)
+                                      tip.length=0.05,
+                                      size=5)
 p3_2_2 <- ggboxplot(df_corr_val %>% select(model,mean_r) %>% unique(), x = "model", y = "mean_r",add='jitter')+
   ggtitle('') +
-  theme(text = element_text(size=11),plot.title = element_text(hjust = 0.5)) +
-  xlab('model') + ylab('average per TFs pearson`s r') + scale_y_continuous(n.breaks = 10) +
+  theme(text = element_text(size=20),plot.title = element_text(hjust = 0.5)) +
+  xlab('model') + ylab('average pearson`s r') + scale_y_continuous(n.breaks = 10) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=1,color='black')
 p3_2_2 <- p3_2_2 + stat_compare_means(comparisons = list(c('Individual models','Ensembles')),
                                       label = 'p.format',
                                       method = 'wilcox.test',
-                                      tip.length=0.05)
+                                      tip.length=0.05,
+                                      size=5)
 print(p3_2_1/p3_2_2)
 
-png('../article_supplementary_info/ensembles_vs_individual_runs_perTF_validationperformance_wellfitted5.png',units = 'in',width = 12,height = 12,res=600)
+png('../article_supplementary_info/suppl_figure_2B.png',units = 'in',width = 12,height = 12,res=600)
 print(p3_2_1/p3_2_2)
 dev.off()
-
-### Load standard deviation and mean of prediction of ensembles------------------
-files <- list.files('../results/FinalEnsemble/preds/')
-files <- files[grep('.csv',files)]
-files <- files[which(!grepl('val',files))]
-
-all_cv_train <- data.frame()
-files_std <- files[grep('std',files)]
-for (file in files_std){
-  cell <- str_split_fixed(file,'_',4)[1,2]
-  file <- paste0('../results/FinalEnsemble/preds/',file)
-  meanFile <- paste0('../results/FinalEnsemble/preds/Y_',cell,'_mean_train.csv')
-  tmp <- data.table::fread(file) %>% column_to_rownames('V1')
-  tmp_mean <- data.table::fread(meanFile) %>% column_to_rownames('V1')
-  print(all(rownames(tmp)==rownames(tmp_mean)))
-  tmp <- tmp/tmp_mean
-  tmp <- tmp %>% gather('TF','CV')
-  tmp <- tmp %>% filter(abs(CV)<10)
-  tmp <- tmp %>% group_by(TF) %>% mutate(CV=mean(CV,na.rm = T)) %>% ungroup()
-  tmp <- tmp %>% unique()
-  tmp <- tmp %>% mutate(cell=cell)  
-  all_cv_train <- rbind(all_cv_train,tmp)
-}
-#df_cv_train <- all_cv_train %>% gather('TF','CV',-cell)
-df_cv_train <-  all_cv_train %>% select(cell,TF,CV)
-df_cv_train <- df_cv_train %>% group_by(cell) %>%  mutate(mean_cv=mean(CV)) %>% ungroup()
-
-df_cv_corr <- left_join(df_corr_val %>% filter(model=='Ensembles'),
-                         df_cv_train)
-ggplot(df_cv_corr,aes(x=CV*100,y=r,color=cell)) + geom_point() +
-  geom_smooth(method ='lm' ,se=F,linetype='dashed') + ylim(c(-0.6,1)) +
-  ggtitle('Performance vs uncertainty in predictions') +
-  xlab('Coefficient of Variation (%)') + ylab('per TFs pearson`s r')+
-  theme_pubr()+
-  theme(text = element_text(size=11),plot.title = element_text(hjust = 0.5))

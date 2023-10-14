@@ -109,3 +109,7 @@ results/A549_ensembles/all_merged_interactions_drugs.csv
 results/A549_ensembles/all_merged_interactions_drugs_withsignalRange.csv
 results/A549_ensembles/grads_vs_weights_A549.csv
 results/A549_ensembles/test/*.png
+article_supplementary_info/supple_fig11_prism.png
+results/A375_ensembles/interestingSamples_sorted_A375.csv
+results/A549_ensembles/interestingSamples_sorted_A549.csv
+results/FinalEnsemble/interestingSamples_sorted_VCAP.csv

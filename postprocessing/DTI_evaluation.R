@@ -311,9 +311,9 @@ plot_confusion <- ggplot(ensemble_final %>% mutate(Count = ifelse(Count>=1000,ro
        y = "Prior knowledge") +
   theme_minimal() +
   theme(text = element_text(family = 'Arial',size=24),
-        axis.text = element_text(family = 'Arial',size = 24),
-        axis.title = element_text(family = 'Arial',size = 24, face = "bold"),
-        legend.text = element_text(family = 'Arial',size = 20),
+        axis.text = element_text(family = 'Arial',size = 28),
+        axis.title = element_text(family = 'Arial',size = 28, face = "bold"),
+        legend.text = element_text(family = 'Arial',size = 23),
         plot.title = element_text(family = 'Arial',size = 24, hjust = 0.5))
 print(plot_confusion)
 
@@ -354,12 +354,12 @@ p <- ggplot(distinct(merged_interactions_all %>% filter(Inferred=='Interaction')
   ggtitle('Inferred interactions by the model') +
   #scale_y_log10()+
   #scale_y_continuous(labels = scales::percent_format(accuracy = 1L))+
-  theme_pubr(base_family = 'Arial',base_size = 24)+
+  theme_pubr(base_family = 'Arial',base_size = 30)+
   theme(panel.grid.major.y = element_line(linetype = 'dashed',colour = 'lightgrey'),
         panel.grid.minor.y = element_line(linetype = 'dashed',colour = 'lightgrey'),
         panel.grid.major.x = element_line(linetype = 'dashed',colour = 'lightgrey'),
         panel.grid.minor.x = element_line(linetype = 'dashed',colour = 'lightgrey'),
-        plot.title = element_text(size=20,hjust = 0.5))
+        plot.title = element_text(size=28,hjust = 0.5))
 p <- p + geom_text(data = ann_text,mapping = aes(x = c(20,30), y = c(280,5200), label = lab),
                    size=9
 )

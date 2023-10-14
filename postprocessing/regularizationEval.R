@@ -381,7 +381,7 @@ p4 <- ggplot(sensitivityFocused,aes(x=as.numeric(as.character(lambda)),y=`averag
   theme(text = element_text(size=13),plot.title = element_text(hjust = 0.5))
 print(p4)
 
-png('../article_supplementary_info/supple_figure13.png',units = 'in',width = 12,height = 9,res = 600)
+png('../article_supplementary_info/supple_figure14.png',units = 'in',width = 12,height = 9,res = 600)
 p3/p4
 dev.off()
 

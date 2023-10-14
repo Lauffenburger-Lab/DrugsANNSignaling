@@ -3,9 +3,9 @@ library(ggplot2)
 library(ggpubr)
 
 # Load data for the plot--------
-a375_scores <-  data.table::fread('Model/CVL1000_Paper/A375_ensembles/grads_vs_weights_A375.csv') %>% select(-V1)
-a549_scores <-  data.table::fread('Model/CVL1000_Paper/A549_ensembles/grads_vs_weights_A549.csv')%>% select(-V1)
-vcap_scores <- data.table::fread('Model/CVL1000_Paper/FinalEnsemble/grads_vs_weights_VCAP.csv')%>% select(-V1)
+a375_scores <-  data.table::fread('../results/A375_ensembles/grads_vs_weights_A375.csv') %>% select(-V1)
+a549_scores <-  data.table::fread('../results/A549_ensembles/grads_vs_weights_A549.csv')%>% select(-V1)
+vcap_scores <- data.table::fread('../results/FinalEnsemble/grads_vs_weights_VCAP.csv')%>% select(-V1)
 all_scores <- rbind(a375_scores,a549_scores,vcap_scores)
 all_scores <- all_scores %>% group_by(cell,model_no) %>% 
   mutate(R2=MLmetrics::R2_Score(grad_scores,weight_scores)) %>% ungroup()

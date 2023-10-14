@@ -22,7 +22,7 @@ gc()
 # Load lethality/viability----------------------
 # PRISM has sensitivity data
 available_datasets <- availablePSets()
-# Load data through PharmacoDB
+# Load data through PharmacoDB-----------------------------------------
 dataset <- PharmacoGx::downloadPSet('NCI60_2021')
 ## Plot Drug Dose response curves, using the same names for compounds and cell lines as PharmacoDB
 drugDoseResponseCurve(dataset, drug="Lestaurtinib", cell="A-549") #CCS-1477 IS A KNOWN MYC INHIBITOR
@@ -389,3 +389,4 @@ res <- rbind(res_test_new[which(test_drugs %in% df$drug),] %>% mutate(point='new
 ggscatter(res,x='predicted',y='EC50',color='point',cor.coef = T,rug = T) +
   xlab('Predicted value') + ylab('True value')+
   geom_abline(intercept = 0,slope=1,linetype=2,color='red',linewidth=2)
+

@@ -409,6 +409,7 @@ p3_2_1 <- p3_2_1 + stat_compare_means(comparisons = list(c('DT-LEMBAS','ANN'),
                                       method = 'wilcox.test',
                                       tip.length=0.05,
                                       size=6)
+print(p3_2_1)
 ggsave('../figure1D.eps',
        device = cairo_ps,
        scale = 1,

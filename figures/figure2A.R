@@ -8,7 +8,7 @@ library(viridis)
 library(patchwork)
 
 ### Load global errors of all drugs
-global_errors <- data.table::fread('Model/CVL1000_Paper/A375_ensembles/all_drugs_global_errors.csv') %>% select(-V1)
+global_errors <- data.table::fread('../results/A375_ensembles/all_drugs_global_errors.csv') %>% select(-V1)
 global_errors <- global_errors %>% gather('drug','error',-grad_threshold)
 no_thresh <- length(unique(global_errors$grad_threshold))
 max_thresh <- max(global_errors$grad_threshold)
@@ -16,7 +16,7 @@ global_errors <- global_errors %>% group_by(grad_threshold) %>% mutate(mean_erro
   mutate(sd_error = sd(error)) %>% mutate(max_error = max(error)) %>% mutate(min_error = min(error)) %>% ungroup()
 max_global <- global_errors$mean_error[which(global_errors$grad_threshold==max_thresh)[1]]
 
-unmasked_global_errors <- data.table::fread('Model/CVL1000_Paper/A375_ensembles/all_drugs_unmasked_global_errors.csv',skip=1)
+unmasked_global_errors <- data.table::fread('../results/A375_ensembles/all_drugs_unmasked_global_errors.csv',skip=1)
 colnames(unmasked_global_errors) <- c('drug','unmasked_error')
 
 global_errors <- left_join(global_errors,unmasked_global_errors)
@@ -53,11 +53,11 @@ p <- ggplot(global_errors,aes(x=grad_threshold,y=mean_error)) +
   theme(text = element_text(family = 'Arial',size=24),
         plot.title = element_text(family = 'Arial',size=26,hjust=0.5))
 print(p)
-png('../MIT/LauffenburgerLab/drugLembasPaper/figure2A.png',units = 'in',width = 12,height = 8,res = 600)
+png('../figures/figure2A.png',units = 'in',width = 12,height = 8,res = 600)
 print(p)
 dev.off()
 
-ggsave('../MIT/LauffenburgerLab/drugLembasPaper/figure2A.eps',
+ggsave('../figures/figure2A.eps',
        plot = p,
        device = cairo_ps,
        scale = 1,

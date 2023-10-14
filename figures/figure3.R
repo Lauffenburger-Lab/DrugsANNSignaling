@@ -16,13 +16,13 @@ drug_name = "lestaurtinib"
 sample = "CPC014_A375_6H:BRD-K23192422-001-01-1:10"
 
 ### Load global errors of all drugs
-global_errors <- data.table::fread('Model/CVL1000_Paper/A375_ensembles/allmodels_all_drugs_global_errors.csv',header = T) 
+global_errors <- data.table::fread('../results/A375_ensembles/allmodels_all_drugs_global_errors.csv',header = T) 
 colnames(global_errors)[1] <- 'model_no'
 global_errors <- global_errors %>% filter(drug == drug_smile)
 global_errors <- global_errors %>% select(-drug)
 global_errors <- global_errors %>% gather('grad_threshold','error',-model_no)
 global_errors$grad_threshold <- as.numeric(global_errors$grad_threshold)
-unmasked_global_errors <- data.table::fread('Model/CVL1000_Paper/A375_ensembles/allmodels_all_drugs_unmasked_global_errors.csv',header=T)
+unmasked_global_errors <- data.table::fread('../results/A375_ensembles/allmodels_all_drugs_unmasked_global_errors.csv',header=T)
 colnames(unmasked_global_errors)[1] <- 'drug'
 unmasked_global_errors <- unmasked_global_errors %>% gather('model_no','unmasked_error',-drug)
 unmasked_global_errors <- unmasked_global_errors %>% filter(drug == drug_smile)
@@ -38,13 +38,13 @@ max_thresh <- max(global_errors$grad_threshold)
 max_global <- global_errors$mean_error[which(global_errors$grad_threshold==max_thresh)[1]]
 
 ### Load TF error of all drugs
-TF_errors <- data.table::fread(paste0('Model/CVL1000_Paper/A375_ensembles/allmodels_all_drugs_',TF_gene,'_errors.csv'),header = T) 
+TF_errors <- data.table::fread(paste0('../results/A375_ensembles/allmodels_all_drugs_',TF_gene,'_errors.csv'),header = T) 
 colnames(TF_errors)[1] <- 'model_no'
 TF_errors <- TF_errors %>% filter(drug == drug_smile)
 TF_errors <- TF_errors %>% select(-drug)
 TF_errors <- TF_errors %>% gather('grad_threshold','error',-model_no)
 TF_errors$grad_threshold <- as.numeric(TF_errors$grad_threshold)
-unmasked_TF_errors <- data.table::fread(paste0('Model/CVL1000_Paper/A375_ensembles/allmodels_all_drugs_unmasked_',TF_gene,'_errors.csv'),header=T)
+unmasked_TF_errors <- data.table::fread(paste0('../results/A375_ensembles/allmodels_all_drugs_unmasked_',TF_gene,'_errors.csv'),header=T)
 colnames(unmasked_TF_errors)[1] <- 'drug'
 unmasked_TF_errors <- unmasked_TF_errors %>% gather('model_no','unmasked_error',-drug)
 unmasked_TF_errors <- unmasked_TF_errors %>% filter(drug == drug_smile)
@@ -112,11 +112,11 @@ p <- ggplot(all_errors,aes(x=grad_threshold,y=mean_error,color=`error type`,fill
         plot.title = element_text(family = 'Arial',size=24,hjust=1))
 print(p)
 
-png('../MIT/LauffenburgerLab/drugLembasPaper/figure3C.png',units = 'in',width = 12,height = 8,res = 600)
+png('../figures/figure3C.png',units = 'in',width = 12,height = 8,res = 600)
 print(p)
 dev.off()
 
-ggsave('../MIT/LauffenburgerLab/drugLembasPaper/figure3C.eps',
+ggsave('../figures/figure3C.eps',
        plot = p,
        device = cairo_ps,
        scale = 1,
@@ -128,7 +128,7 @@ ggsave('../MIT/LauffenburgerLab/drugLembasPaper/figure3C.eps',
 ### Build average confusion-matrix and bar-plot for Lestaurtinib-------------------------------------------------
 
 no_models <- 50
-merged_interactions_all <- data.table::fread('Model/CVL1000_Paper/A375_ensembles/all_merged_interactions_drugs.csv',header=T) %>% column_to_rownames('V1')
+merged_interactions_all <- data.table::fread('../results/A375_ensembles/all_merged_interactions_drugs.csv',header=T) %>% column_to_rownames('V1')
 merged_interactions_all <- merged_interactions_all %>% select("drug","variable","Prior knowledge","Inferred","model_no")
 merged_interactions_all <- merged_interactions_all %>% filter(drug==drug_smile)
 ensemble_table <- NULL
@@ -171,7 +171,7 @@ plot_confusion <- ggplot(ensemble_final %>% mutate(Count = ifelse(Count>=1000,ro
         plot.title = element_text(family = 'Arial',size = 24, hjust = 0.5))
 print(plot_confusion)
 
-ggsave('../MIT/LauffenburgerLab/drugLembasPaper/A375_ensembled_drugtarget_lestrautinib.eps',
+ggsave('../figures/A375_ensembled_drugtarget_lestrautinib.eps',
        plot = plot_confusion,
        device = cairo_ps,
        scale = 1,

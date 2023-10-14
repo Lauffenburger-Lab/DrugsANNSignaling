@@ -55,13 +55,13 @@ interestingTFs <- interestingTFs %>% filter(keep==TRUE)
 drugs <- unique(interestingTFs$drug)
 p <- ggplot(df %>% filter(!is.na(drug)),aes(x=-delta,y=activity,color=score)) +
   geom_point() + 
-  scale_colour_gradient2(low = "blue",mid="white" ,high = "red",midpoint = 0.4,limits=c(0,0.72)) + xlab(expression("TF"~Delta*"activity")) + ylab('TF activity') + 
+  scale_colour_gradient2(low = "blue",mid="white" ,high = "red",midpoint = 0.4,limits=c(0,0.72)) + xlab(expression(Delta*"TF")) + ylab('DoRothEA inferred TF activity') + 
   geom_vline(xintercept = -0.25,linetype = 'dashed') + geom_vline(xintercept = 0.25,linetype = 'dashed')+
   geom_hline(yintercept = 0.25,linetype = 'dashed') + geom_hline(yintercept = 0.75,linetype = 'dashed')+
   ylim(c(0,1)) +
   scale_x_continuous(breaks = c(-0.4,-0.2,0,0.2,0.4),limits = c(-0.4,0.45))+
   theme_pubr() + 
-  theme(text = element_text(size=20),legend.position = 'right')+
+  theme(text = element_text(size=24),legend.position = 'right')+
   geom_label_repel(data=interestingTFs,
             aes(label=name),
             box.padding   = 0.75, 
@@ -78,7 +78,14 @@ ggsave('../figures/figure3B.eps',
        height = 9,
        units = "in",
        dpi = 600)
-
+# interestingTFs = df %>% filter(!is.na(drug))  %>% 
+#   filter(mean_r>0.4 & score>=0.5) %>% 
+#   filter((delta>0.23 | delta<(-0.23)) & (activity>0.75 | activity<0.25))
+# interestingTFs <- interestingTFs %>% mutate(delta=-delta)
+# interestingTFs <- interestingTFs %>% arrange(abs(delta),score,activity)
+# colnames(interestingTFs)[c(2,8)] <- c('uniprot_id','TF')
+# data_cmap <- readRDS("../preprocessing/preprocessed_data/all_cmap_sigs_with_pert_info.rds")
+# interestingTFs <- left_join(interestingTFs,data_cmap %>% select(sig_id,pert_iname,pert_idose,pert_itime) %>% unique(),by=c('sample'='sig_id'))
 data.table::fwrite(interestingTFs,
                    '../results/A375_ensembles/interestingSamples_A375.csv',
                    row.names = T)
