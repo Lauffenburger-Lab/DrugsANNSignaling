@@ -344,7 +344,7 @@ ggsave('../figures/figure4B.eps',
 
 # Interesting resutls to do some in-silico network simulations----------------------------------------------------
 # Load the simulated in-silico perturbations
-insilico_perturbations <- data.table::fread('../results/ExperimentalValidation/inSilicoKOs_minus100.csv')
+insilico_perturbations <- data.table::fread('../results/ExperimentalValidation/inSilicoKOs_minus10.csv')
 colnames(insilico_perturbations)[1] <- 'model'
 insilico_perturbations <- insilico_perturbations %>% gather('perturbation','FOXM1 activity',-model)
 insilico_perturbations <- insilico_perturbations %>% 
@@ -389,9 +389,9 @@ mu_lestaurtinib <- median(mu_lestaurtinib$`FOXM1 activity`)
 #                                 "#7CAE00","#B79F00"))+
 #   #geom_hline(yintercept = 0.5,linetype='dashed',color='black',linewidth=1) +
 #   geom_hline(yintercept = mu_dmso,linetype='dashed',color="#DE8C00",linewidth=1) +
-#   annotate('text',x=3.2,y=0.58,label='DMSO-induced mean activity',color="#DE8C00",size=5)+
+#   annotate('text',x=3.5,y=0.6,label='DMSO-induced median activity',color="#DE8C00",size=6)+
 #   geom_hline(yintercept = mu_lestaurtinib,linetype='dashed',color="#F8766D",linewidth=1) +
-#   annotate('text',x=3.2,y=0.35,label='Lestaurtinib-induced mean activity',color="#F8766D",size=5)+
+#   annotate('text',x=3.5,y=0.37,label='Lestaurtinib-induced median activity',color="#F8766D",size=6)+
 #   theme(text=element_text(size=24),
 #         axis.text.x = element_text(angle = 0),
 #         legend.position = 'none')+
@@ -409,9 +409,9 @@ ggboxplot(insilico_perturbations %>% filter(!grepl('-target',perturbation)),
           add='jitter') +
   # geom_hline(yintercept = 0.5,linetype='dashed',color='black',linewidth=1) +
   geom_hline(yintercept = mu_dmso,linetype='dashed',color="#DE8C00",linewidth=1) +
-  annotate('text',x=1.05,y=0.8,label='DMSO-induced mean activity',color="#DE8C00",size=4.5)+
+  annotate('text',x=1.1,y=0.83,label='DMSO-induced median activity',color="#DE8C00",size=6)+
   geom_hline(yintercept = mu_lestaurtinib,linetype='dashed',color="#F8766D",linewidth=1) +
-  annotate('text',x=2.2,y=0.44,label='Lestaurtinib-induced mean activity',color="#F8766D",size=4.5)+
+  annotate('text',x=2.25,y=0.38,label='Lestaurtinib-induced median activity',color="#F8766D",size=6)+
   theme(text=element_text(size=24),
         axis.text.x = element_text(angle = 0),
         legend.position = 'none') +
@@ -422,7 +422,7 @@ ggboxplot(insilico_perturbations %>% filter(!grepl('-target',perturbation)),
                      y.position = 0.85,
                      size = 10)
 
-ggsave('../article_supplementary_info/supple_figure11A.eps',
+ggsave('../figures/figure4C.eps',
        device= cairo_ps,
        scale = 1,
        width = 20,
@@ -456,9 +456,9 @@ p1 <- ggplot(insilico_perturbations_all,
                                 "#619CFF", "#C77CFF"))+
   geom_hline(yintercept = 0.5,linetype='dashed',color='black',linewidth=1) +
   geom_hline(yintercept = mu_dmso,linetype='dashed',color="#DE8C00",linewidth=1) +
-  annotate('text',x=100,y=0.76,label='DMSO-induced mean activity',color="#DE8C00",size=5)+
+  annotate('text',x=100,y=0.76,label='DMSO-induced median activity',color="#DE8C00",size=5)+
   geom_hline(yintercept = mu_lestaurtinib,linetype='dashed',color="#F8766D",linewidth=1) +
-  annotate('text',x=100,y=0.44,label='Lestaurtinib-induced mean activity',color="#F8766D",size=5)+
+  annotate('text',x=100,y=0.44,label='Lestaurtinib-induced median activity',color="#F8766D",size=5)+
   ggtitle('FOXM1 activity as a function of the knockdown strength')+
   theme_minimal() +
   theme(text=element_text(size=19),
