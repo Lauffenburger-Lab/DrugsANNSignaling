@@ -14,6 +14,7 @@ preprocessing/preprocessed_data/TF_activities/Trimmed_l1000_allgenes_lvl3_tfs.ts
 preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv
 preprocessing/preprocessed_data/ChemicalSims/all_total_smiles.csv
 preprocessing/preprocessed_data/ChemicalSims/all_total_similarities.csv
+results/viability_data_all.rds
 results/vanilla_ensembles/ANN/models/
 results/vanilla_ensembles/ANN/train/
 results/vanilla_ensembles/ANN/train_easy
@@ -113,3 +114,5 @@ article_supplementary_info/supple_fig11_prism.png
 results/A375_ensembles/interestingSamples_sorted_A375.csv
 results/A549_ensembles/interestingSamples_sorted_A549.csv
 results/FinalEnsemble/interestingSamples_sorted_VCAP.csv
+ShinyAPP
+ShinyAPP/*
