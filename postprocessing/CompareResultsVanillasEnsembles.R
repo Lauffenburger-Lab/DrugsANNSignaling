@@ -298,7 +298,7 @@ ggsave('../figures/figure1C.eps',
        plot = p3_2_1,
        device = cairo_ps,
        width = 12,
-       height = 10,
+       height = 4,
        units = 'in',
        dpi = 600)
 ### Boxplot the p-values of individual TFs
@@ -370,7 +370,7 @@ p3_2_3 <- ggboxplot(lembas_noisy, x = "cell", y = "r",outlier.shape = NA)+
   #ggtitle('DT-LEMBAS model per cell line') + #geom_jitter(aes(color=cell))+
   theme(text = element_text(family='Arial',size=22),plot.title = element_text(size=20,hjust = 0.5,vjust=1),
         legend.position = 'top',legend.title = element_blank()) +
-  xlab('cell line') + ylab('per TF pearson`s r') + scale_y_continuous(n.breaks = 10) +
+  xlab('cell line') + ylab('per TF pearson`s r') + scale_y_continuous(n.breaks = 10,expand = c(0, 0.2)) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=1,color='black')
 p3_2_3 <- p3_2_3 + stat_compare_means(method='kruskal.test',size = 7,label.y = 0.78)
 stat.test <- lembas_noisy %>% 
@@ -381,7 +381,7 @@ ggsave('../figures/figure1B.eps',
        device = cairo_ps,
        scale = 1,
        width = 12,
-       height = 10,
+       height = 4,
        units = "in",
        dpi = 600)
 
@@ -410,10 +410,10 @@ p3_2_1 <- p3_2_1 + stat_compare_means(comparisons = list(c('DT-LEMBAS','ANN'),
                                       tip.length=0.05,
                                       size=6)
 print(p3_2_1)
-ggsave('../figure1D.eps',
+ggsave('../figures/figure1D.eps',
        device = cairo_ps,
        scale = 1,
        width = 12,
-       height = 10,
+       height = 8,
        units = "in",
        dpi = 600)

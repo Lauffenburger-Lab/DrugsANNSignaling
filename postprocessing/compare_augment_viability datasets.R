@@ -6,6 +6,7 @@ library(ggpubr)
 library(PharmacoGx)
 library(caret)
 library(pheatmap)
+library(ggrepel)
 
 # Load cmap data---------------
 drug_targets <- read.delim('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-drugs_targets.tsv',row.names = 1)
@@ -113,7 +114,7 @@ X <- X %>% column_to_rownames('dataset')
 inds <- apply(X,2,count_nas)
 print(min(inds))
 hist(inds)
-inds_keep <- which(inds<=3)
+inds_keep <- which(inds<=1)
 X <- X[,inds_keep]
 row_na <- apply(X,1,count_nas)
 min(row_na)
@@ -128,10 +129,27 @@ for (i in 1:nrow(X)){
 }
 
 #pca plot
-pca <- prcomp(X,center = T,scale = F)
+pca <- prcomp(X,center = T,scale = T)
 df <- pca$x[,1:2]
 df <- as.data.frame(df) %>% rownames_to_column('dataset')
-ggplot(df,aes(x=PC1,y=PC2,color=dataset)) + geom_point(size=3) + geom_label(aes(label = dataset))
-
+ggplot(df,aes(x=PC1,y=PC2,color=dataset)) + geom_point(size=3) + 
+  geom_label_repel(aes(label = dataset),
+                   size=6,
+                   box.padding   = 0.75, 
+                   point.padding = 0.1,
+                   max.overlaps = 40) + 
+  theme_minimal(base_family = 'Arial',base_size = 22) +
+  theme(text = element_text(family = 'Arial',size=22),
+        legend.position = 'top')
+ggsave('../article_supplementary_info/viability_datasets_pca.eps',
+       device = cairo_ps,
+       width = 9,
+       height = 9,
+       units = 'in',
+       dpi = 600)
 # clustermap
 pheatmap(X)
+setEPS()
+postscript('../article_supplementary_info/viability_datasets_clustermap.eps',width = 9,height = 9)
+pheatmap(X)
+dev.off()
