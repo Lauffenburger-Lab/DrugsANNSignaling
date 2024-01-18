@@ -117,6 +117,7 @@ results/FinalEnsemble/interestingSamples_sorted_VCAP.csv
 postprocessing/frequency_results_RF.rds
 postprocessing/prior_knowledge_results_RF.rds
 postprocessing/threshold_results_RF.rds
+postprocessing/*.rds
 results/all_frequencies_ANN_a549.rds
 results/all_frequencies_RF_a549.rds
 results/all_prior_knowledge_RF_a549.rds
