@@ -3,13 +3,13 @@ library(readr)
 library(ggplot2)
 library(ggpubr)
 library(patchwork)
-# library(PharmacoGx)
-# library(caret)
+library(PharmacoGx)
+library(caret)
 source("viabilityModeling.R")
 
 # Initialize
 set <- 'NCI60_2021'
-md <- 'lasso'
+md <- 'rf'
 type <- 'prior'
 no_models <- 50
 th <- 44
@@ -31,83 +31,83 @@ data_cmap <- data_cmap %>% filter(canonical_smiles %in% rownames(drug_targets) |
 gc()
   
 # Load lethality/viability----------------------
-# # PRISM has sensitivity data
-# available_datasets <- availablePSets()
-# # Load data through PharmacoDB
-# dataset <- PharmacoGx::downloadPSet('NCI60_2021')
-# ## Plot Drug Dose response curves, using the same names for compounds and cell lines as PharmacoDB
-# drugDoseResponseCurve(dataset, drug="Lestaurtinib", cell="A-549") #CCS-1477 IS A KNOWN MYC INHIBITOR
-# drugDoseResponseCurve(dataset, drug="Cbp-IN-1", cell="A-549")
-# cell_line_sensitivity <- dataset@sensitivity[["profiles"]]
-# pert_info <-dataset@sensitivity[["info"]]
-# drug_info <- dataset@drug
-# # get cmap drugs in this dataset
-# drug_info <- drug_info %>% filter((smiles %in% data_cmap$canonical_smiles) |
-#                              (inchikey %in% data_cmap$inchi_key) | 
-#                              (cid %in% data_cmap$pubchem_cid) | 
-#                              (tolower(drugid) %in% tolower(data_cmap$pert_iname)))
-# smile_merged <- left_join(drug_info,data_cmap %>% dplyr::select(canonical_smiles,pert_iname,cell_id,sig_id),
-#                           by=c('smiles'='canonical_smiles')) %>% filter(!is.na(sig_id))
-# inchi_merged <- left_join(drug_info,data_cmap %>% dplyr::select(inchi_key,pert_iname,cell_id,sig_id),
-#                           by=c('inchikey'='inchi_key')) %>% filter(!is.na(sig_id))
-# cid_merged <- left_join(drug_info,data_cmap %>% dplyr::select(pubchem_cid,pert_iname,cell_id,sig_id),
-#                           by=c('cid'='pubchem_cid')) %>% filter(!is.na(sig_id))
-# drugid_merged <- left_join(drug_info %>%  mutate(drugid=tolower(drugid)),
-#                            data_cmap %>% dplyr::select(pert_iname,cell_id,sig_id) %>%
-#                              mutate(pert_iname=tolower(pert_iname)),
-#                         by=c('drugid'='pert_iname')) %>% filter(!is.na(sig_id)) %>% dplyr::select(-drugid)
-# drugid_merged <- left_join(drug_info,drugid_merged) %>% filter(!is.na(sig_id))
-# drugid_merged <- left_join(drugid_merged,data_cmap %>% dplyr::select(pert_iname,sig_id)) %>% filter(!is.na(sig_id))
-# drugid_merged <- drugid_merged %>% dplyr::select(all_of(colnames(smile_merged)))
-# drug_info <- rbind(smile_merged,inchi_merged,cid_merged,drugid_merged) %>% unique()
-# # # drug original with drugbank
-# # drug_info_original <- dataset@drug
-# # drug_info_original <- drug_info_original %>% filter(smiles %in% rownames(drug_targets_drugbank) | toupper(drugid) %in% toupper(rownames(drug_targets_drugbank)))
-# 
-# ## Keep perturbations only for those drugs
-# # pert_info <- pert_info %>% filter(drugid %in% c(drug_info$drugid,drug_info_original$drugid))
-# pert_info <- pert_info %>% filter(drugid %in% drug_info$drugid)
-# pert_info <- pert_info %>% mutate(cellid=gsub('-','',cellid))
-# pert_info <- pert_info %>% mutate(cellid=toupper(cellid))
-# pert_info <- pert_info %>% filter(cellid %in% data_cmap$cell_id)
-# drug_info <- drug_info %>% filter(drugid %in% pert_info$drugid)
-# drug_info <- drug_info %>% filter(cell_id %in% pert_info$cellid)
-# # drug_info_original <- drug_info_original  %>% filter(drugid %in% pert_info$drugid)
-# # pert_info <- pert_info %>% filter(drugid %in% c(drug_info$drugid,drug_info_original$drugid))
-# pert_info <- pert_info %>% filter(drugid %in% drug_info$drugid)
-# # filter sensitivity data
-# cell_line_sensitivity <- cell_line_sensitivity[rownames(pert_info),]
-# gc()
-# # filter to keep drugs that are in our data
-# cell_line_sensitivity$EC50 <- log10(cell_line_sensitivity$EC50)
-# drug_info <- drug_info %>% filter(smiles %in% rownames(drug_targets))
-# # drug_info_original <- drug_info_original %>% filter((smiles %in% rownames(drug_targets)) | (drugid %in% rownames(drug_targets)))
-# pert_info <- pert_info %>% filter(drugid %in% drug_info$drugid)
-# # pert_info <- pert_info %>% filter(drugid %in% c(drug_info$drugid,drug_info_original$drugid))
-# cell_line_sensitivity <- cell_line_sensitivity[rownames(pert_info),]
-# cell_line_sensitivity <- cell_line_sensitivity %>% rownames_to_column('exp_id') %>%
-#   select(exp_id,EC50) %>% unique()
-# # create first cell-line one-hot encoding matrix
-# cell_info <- pert_info %>% rownames_to_column('exp_id') %>% select(exp_id,cellid) %>% unique() %>% mutate(value=1)
-# cell_info <- cell_info %>% spread('cellid','value')
-# cell_info[is.na(cell_info)] <- 0
-# 
-# pert_info <- pert_info %>% rownames_to_column('exp_id') %>% select(exp_id,drugid,cellid)
-# # pert_info_original <- left_join(pert_info,drug_info_original %>% select(drugid,smiles) %>% unique())
-# # pert_info_original <- pert_info_original %>% filter(drugid %in% drug_info_original$drugid)
-# # pert_info_original <- distinct(pert_info_original)
-# # pert_info_original <- pert_info_original %>% mutate(smiles = ifelse(!(smiles %in% rownames(drug_targets)),drugid,smiles))
-# # pert_info_original <- distinct(pert_info_original)
-# pert_info <- left_join(pert_info,drug_info %>% select(drugid,smiles) %>% unique())
-# # pert_info <- rbind(pert_info,pert_info_original)
-# pert_info <- left_join(pert_info,as.data.frame(drug_targets) %>% rownames_to_column('smiles'))
-# pert_info <- left_join(pert_info,cell_info)
-# pert_info <-  pert_info %>% filter(!is.na(smiles)) 
-# # get all data
-# data <- left_join(pert_info,cell_line_sensitivity)
-# data <- data %>% group_by(drugid,cellid) %>% mutate(EC50=mean(EC50)) %>% ungroup()
-# data <- data %>% filter(!is.na(EC50))
-# data <- data %>% select(-cellid,-exp_id) %>% unique()
+# PRISM has sensitivity data
+available_datasets <- availablePSets()
+# Load data through PharmacoDB
+dataset <- PharmacoGx::downloadPSet('NCI60_2021')
+## Plot Drug Dose response curves, using the same names for compounds and cell lines as PharmacoDB
+drugDoseResponseCurve(dataset, drug="Lestaurtinib", cell="A-549") #CCS-1477 IS A KNOWN MYC INHIBITOR
+drugDoseResponseCurve(dataset, drug="Cbp-IN-1", cell="A-549")
+cell_line_sensitivity <- dataset@sensitivity[["profiles"]]
+pert_info <-dataset@sensitivity[["info"]]
+drug_info <- dataset@drug
+# get cmap drugs in this dataset
+drug_info <- drug_info %>% filter((smiles %in% data_cmap$canonical_smiles) |
+                             (inchikey %in% data_cmap$inchi_key) |
+                             (cid %in% data_cmap$pubchem_cid) |
+                             (tolower(drugid) %in% tolower(data_cmap$pert_iname)))
+smile_merged <- left_join(drug_info,data_cmap %>% dplyr::select(canonical_smiles,pert_iname,cell_id,sig_id),
+                          by=c('smiles'='canonical_smiles')) %>% filter(!is.na(sig_id))
+inchi_merged <- left_join(drug_info,data_cmap %>% dplyr::select(inchi_key,pert_iname,cell_id,sig_id),
+                          by=c('inchikey'='inchi_key')) %>% filter(!is.na(sig_id))
+cid_merged <- left_join(drug_info,data_cmap %>% dplyr::select(pubchem_cid,pert_iname,cell_id,sig_id),
+                          by=c('cid'='pubchem_cid')) %>% filter(!is.na(sig_id))
+drugid_merged <- left_join(drug_info %>%  mutate(drugid=tolower(drugid)),
+                           data_cmap %>% dplyr::select(pert_iname,cell_id,sig_id) %>%
+                             mutate(pert_iname=tolower(pert_iname)),
+                        by=c('drugid'='pert_iname')) %>% filter(!is.na(sig_id)) %>% dplyr::select(-drugid)
+drugid_merged <- left_join(drug_info,drugid_merged) %>% filter(!is.na(sig_id))
+drugid_merged <- left_join(drugid_merged,data_cmap %>% dplyr::select(pert_iname,sig_id)) %>% filter(!is.na(sig_id))
+drugid_merged <- drugid_merged %>% dplyr::select(all_of(colnames(smile_merged)))
+drug_info <- rbind(smile_merged,inchi_merged,cid_merged,drugid_merged) %>% unique()
+# # drug original with drugbank
+# drug_info_original <- dataset@drug
+# drug_info_original <- drug_info_original %>% filter(smiles %in% rownames(drug_targets_drugbank) | toupper(drugid) %in% toupper(rownames(drug_targets_drugbank)))
+
+## Keep perturbations only for those drugs
+# pert_info <- pert_info %>% filter(drugid %in% c(drug_info$drugid,drug_info_original$drugid))
+pert_info <- pert_info %>% filter(drugid %in% drug_info$drugid)
+pert_info <- pert_info %>% mutate(cellid=gsub('-','',cellid))
+pert_info <- pert_info %>% mutate(cellid=toupper(cellid))
+pert_info <- pert_info %>% filter(cellid %in% data_cmap$cell_id)
+drug_info <- drug_info %>% filter(drugid %in% pert_info$drugid)
+drug_info <- drug_info %>% filter(cell_id %in% pert_info$cellid)
+# drug_info_original <- drug_info_original  %>% filter(drugid %in% pert_info$drugid)
+# pert_info <- pert_info %>% filter(drugid %in% c(drug_info$drugid,drug_info_original$drugid))
+pert_info <- pert_info %>% filter(drugid %in% drug_info$drugid)
+# filter sensitivity data
+cell_line_sensitivity <- cell_line_sensitivity[rownames(pert_info),]
+gc()
+# filter to keep drugs that are in our data
+cell_line_sensitivity$EC50 <- log10(cell_line_sensitivity$EC50)
+drug_info <- drug_info %>% filter(smiles %in% rownames(drug_targets))
+# drug_info_original <- drug_info_original %>% filter((smiles %in% rownames(drug_targets)) | (drugid %in% rownames(drug_targets)))
+pert_info <- pert_info %>% filter(drugid %in% drug_info$drugid)
+# pert_info <- pert_info %>% filter(drugid %in% c(drug_info$drugid,drug_info_original$drugid))
+cell_line_sensitivity <- cell_line_sensitivity[rownames(pert_info),]
+cell_line_sensitivity <- cell_line_sensitivity %>% rownames_to_column('exp_id') %>%
+  select(exp_id,EC50) %>% unique()
+# create first cell-line one-hot encoding matrix
+cell_info <- pert_info %>% rownames_to_column('exp_id') %>% select(exp_id,cellid) %>% unique() %>% mutate(value=1)
+cell_info <- cell_info %>% spread('cellid','value')
+cell_info[is.na(cell_info)] <- 0
+
+pert_info <- pert_info %>% rownames_to_column('exp_id') %>% select(exp_id,drugid,cellid)
+# pert_info_original <- left_join(pert_info,drug_info_original %>% select(drugid,smiles) %>% unique())
+# pert_info_original <- pert_info_original %>% filter(drugid %in% drug_info_original$drugid)
+# pert_info_original <- distinct(pert_info_original)
+# pert_info_original <- pert_info_original %>% mutate(smiles = ifelse(!(smiles %in% rownames(drug_targets)),drugid,smiles))
+# pert_info_original <- distinct(pert_info_original)
+pert_info <- left_join(pert_info,drug_info %>% select(drugid,smiles) %>% unique())
+# pert_info <- rbind(pert_info,pert_info_original)
+pert_info <- left_join(pert_info,as.data.frame(drug_targets) %>% rownames_to_column('smiles'))
+pert_info <- left_join(pert_info,cell_info)
+pert_info <-  pert_info %>% filter(!is.na(smiles))
+# get all data
+data <- left_join(pert_info,cell_line_sensitivity)
+data <- data %>% group_by(drugid,cellid) %>% mutate(EC50=mean(EC50)) %>% ungroup()
+data <- data %>% filter(!is.na(EC50))
+data <- data %>% select(-cellid,-exp_id) %>% unique()
 # saveRDS(data,'NCI60_2021.rds')
 
 # Skip above and run this
@@ -188,10 +188,10 @@ mdls <- total_results$mdls
 res_test <- total_results$res_test
 res_test_all <- total_results$res_test_all
 
-#saveRDS(final_results,paste0('../results/viability_analysis_results/',type,'_results_',toupper(md),'.rds'))
-saveRDS(mdls,paste0('../results/viability_analysis_results/','models_',type,'_',toupper(md),'_a549.rds'))
-saveRDS(res_test,paste0('../results/viability_analysis_results/','predictions_A549_',type,'_',toupper(md),'.rds'))
-saveRDS(res_test_all,paste0('../results/viability_analysis_results/','predictions_all_',type,'_',toupper(md),'.rds'))
+#saveRDS(final_results,paste0(type,'_results_',toupper(md),'_',toupper(set),'.rds'))
+saveRDS(mdls,paste0('models_',type,'_',toupper(md),'_',toupper(set),'.rds'))
+saveRDS(res_test,paste0('predictions_A549_',type,'_',toupper(md),'_',toupper(set),'.rds'))
+saveRDS(res_test_all,paste0('predictions_all_',type,'_',toupper(md),'_',toupper(set),'.rds'))
 
 # colnames(final_results)[c(3,5)] <- c('LOOCV A549','LOOCV A549 shuffled')
 # final_results <- final_results %>% gather('data','r')
@@ -215,14 +215,14 @@ p2 <- ggscatter(res_test_all %>% filter(data=='shuffled'),x='predicted',y='EC50'
         plot.title = element_text(hjust = 0.5))
 p <- p1+p2
 print(p)
-ggsave(paste0('../results/viability_analysis_results/','performance_',type,'_',toupper(md),'_a549.eps'),
+ggsave(paste0('../results/viability_analysis_results/','performance_',type,'_',toupper(md),'_',toupper(set),'.eps'),
        plot=p,
        device = cairo_ps,
        height = 10,
        width = 17,
        units = 'in',
        dpi = 600)
-ggsave(paste0('../results/viability_analysis_results/','performance_',type,'_',toupper(md),'_a549.png'),
+ggsave(paste0('../results/viability_analysis_results/','performance_',type,'_',toupper(md),'_',toupper(set),'.png'),
        plot=p,
        height = 10,
        width = 17,

@@ -12,7 +12,7 @@ viability_model <- function(data_used,
                                       "UHNBreast_2019","PRISM_2020","gCSI_2019",
                                       "CTRPv2_2015","GRAY_2017","CCLE_2015"),
                             lethality_data_path ='',
-                            model = c('lm','rf','xgTree','neuralnet','gaussprLinear','knn','svmLinear','lasso','ridge','elasticnet'),
+                            model = c('lm','rf','xgbTree','neuralnet','gaussprLinear','knn','svmLinear','lasso','ridge','elasticnet'),
                             no_models=50){
   library(tidyverse)
   library(readr)
