@@ -95,15 +95,15 @@ if type(ConvertToEmpProb) == str :
     ConvertToEmpProb = eval(ConvertToEmpProb)
 inputPattern = args.inputPattern
 inputPattern = cell + "_" + inputPattern
-inputPath = ensembles_path + inputPattern
+inputPath = ensembles_path + 'models/'+ inputPattern
 
 ### Choose TF and drug to investigate
 # interestingSamples = pd.read_csv(ensembles_path+'interestingSamples.csv',index_col=1)
 TF = "Q08050"
 TF_gene = "FOXM1"
-drug = "C[C@]12O[C@H](C[C@]1(O)CO)n1c3ccccc3c3c4C(=O)NCc4c4c5ccccc5n2c4c13"
-drug_name = "lestaurtinib"
-sample = "CPC014_A375_6H:BRD-K23192422-001-01-1:10"
+drug = "CC(C)(C)c1cc(NC(=O)Nc2ccc(cc2)-c2cn3c(n2)sc2cc(OCCN4CCOCC4)ccc32)no1"
+drug_name = "quizartinib"
+sample = "CPC014_A375_6H:BRD-K93918653-001-01-4:10"
 moa_off_target = 'any'
 #'inhibit'
 
@@ -196,6 +196,7 @@ global_grad_scores = pd.read_csv(ensembles_path+"all_drugs_global_thresholds.csv
 global_grad_scores = torch.tensor(global_grad_scores.loc[drug,:].values)
 # global_grad_scores = torch.load(ensembles_path+"InteractionScores/global_gradient_scores_"+drug+"_sample_ind"+str(sample_ind[0])+"_all_models.pt")
 
+#%%
 ### Mapping of names and ids in graph
 map = dict(zip(nodeNames, list(range(len(nodeNames)))))
 df_all = pd.DataFrame({'source':[],'target':[],'weight':[],'name_source':[],'name_target':[],'interaction':[],'model_no':[]})
