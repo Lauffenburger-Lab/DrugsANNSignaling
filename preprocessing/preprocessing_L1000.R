@@ -37,7 +37,7 @@ write.table(dorothea, file = 'preprocessed_data/TF_activities/TrimmedFinal_l1000
 pkn <- data.table::fread(('preprocessed_data/PKN/l1000_lvl3_withsignor-Model.tsv'))
 data <- readRDS("preprocessed_data/all_cmap_sigs_with_pert_info.rds")
 data <- data %>% filter(is_exemplar==1)  %>%
-  filter(pert_itime %in% c("6 h"))
+  filter(pert_itime %in% c("6 h")) # only PBS is not 6 hours and just 4 hrs, so for consistency we get rid of it.
 data <- data %>% dplyr::select(sig_id,pert_type,pert_idose,pert_itime,cell_id,pert_id,canonical_smiles) %>% unique()
 gc()
 data_merged <- data

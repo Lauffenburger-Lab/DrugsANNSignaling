@@ -13,7 +13,7 @@ gc()
 cells <- unique(data_lvl5$cell_id)
 data <- data.frame()
 for (cell in cells){
-  drug_sigs_per_line(cell,data_lvl5,sig_metrics)
+  # drug_sigs_per_line(cell,data_lvl5,sig_metrics)
   data <- rbind(data,drug_sigs_per_line(cell,data_lvl5,sig_metrics))
 }
 data <- data %>% select(-quality)
@@ -30,13 +30,13 @@ data <- readRDS("preprocessed_data/sig_info_5_with_exempler.rds")
 ### read the GSE of the perturbations
 pert_info <- read.delim(file = "../data/GSE92742_Broad_LINCS_pert_info.txt")
 pert_info <- pert_info %>% filter(pert_type == "trt_cp")
-pert_info <- pert_info %>% select(pert_id,inchi_key_prefix,inchi_key,canonical_smiles,pubchem_cid,pert_iname)
+pert_info <- pert_info %>% dplyr::select(pert_id,inchi_key_prefix,inchi_key,canonical_smiles,pubchem_cid,pert_iname)
 tt <- left_join(data,pert_info)
 saveRDS(tt,'preprocessed_data/all_cmap_sigs_with_pert_info.rds')
 cmap_drugs <- tt %>%  filter(pert_type == "trt_cp") 
 
 ### drugs in cmap
-cmap_drugs <- cmap_drugs %>% select(pert_id,pert_iname) %>% unique()
+cmap_drugs <- cmap_drugs %>% dplyr::select(pert_id,pert_iname) %>% unique()
 ### add drug info to drugs in cmap
 cmap_drugs <- left_join(cmap_drugs,pert_info)
 ### add moa and target from the broad repo
@@ -77,7 +77,7 @@ df5 <- left_join(cmap_drugs,broad_repo,by = c("pert_iname"="Name"))
 df <- bind_rows(df1,df2,df3,df4,df5) %>% unique()
 
 df_new <- df %>%
-  select(pert_id,Target,MOA,Phase,Disease.Area) %>%
+  dplyr::select(pert_id,Target,MOA,Phase,Disease.Area) %>%
   filter(!(is.na(Target)&is.na(MOA))) %>%
   mutate(nchar_target = nchar(as.character(Target))) %>%
   group_by(pert_id) %>% 
@@ -90,13 +90,13 @@ df_new <- df %>%
 cmap_drugs <- left_join(cmap_drugs,df_new)
 ## add dmso and ctrls
 cmap_ctrls <- tt%>% filter(pert_type=='ctl_vehicle' | pert_type=='ctl_untrt') %>% 
-  select(pert_id,pert_iname,inchi_key_prefix,inchi_key,canonical_smiles,pubchem_cid)%>%unique()
+  dplyr::select(pert_id,pert_iname,inchi_key_prefix,inchi_key,canonical_smiles,pubchem_cid)%>%unique()
 cmap_ctrls <- cmap_ctrls %>% mutate(canonical_smiles = ifelse(pert_id=='DMSO','CS(C)=O',
                                                               ifelse(pert_id=='H2O','O',
                                                                      ifelse(pert_id=='PBS','Ctrl_PBS','Ctrl_UnTrt'))))
 cmap_ctrls <- cmap_ctrls %>% mutate(Target=ifelse(pert_id=='DMSO','IL5RA, MUC16, MYC','None'))
 cmap_ctrls <- cmap_ctrls %>% mutate(MOA=NA,Phase=NA,Disease.Area='control') %>% mutate(nchar_target = nchar(as.character(Target)))
-cmap_ctrls <- cmap_ctrls %>% select(colnames(cmap_drugs))
+cmap_ctrls <- cmap_ctrls %>% dplyr::select(colnames(cmap_drugs))
 cmap_drugs <- rbind(cmap_drugs,cmap_ctrls)
 ### save the results
 saveRDS(cmap_drugs,"preprocessed_data/all_cmapdrugs_moa+target_v1.rds")
@@ -109,7 +109,7 @@ cmap_drugs <- cmap_drugs %>% filter(!is.na(Target))
 cmap_drugs <- cmap_drugs %>% filter(Target!='')
 cmap_drugs <- cmap_drugs %>% filter(Target!=' ')
 cmap_drugs <- cmap_drugs %>%filter(pubchem_cid!=-666)
-cmap_drugs <- cmap_drugs %>% select(canonical_smiles,pubchem_cid,Target,MOA,Phase,Disease.Area)
+cmap_drugs <- cmap_drugs %>% dplyr::select(canonical_smiles,pubchem_cid,Target,MOA,Phase,Disease.Area)
 cmap_drugs <- cmap_drugs %>% group_by(canonical_smiles) %>% mutate(dupl = n()) %>% ungroup()
 cmap_drugs1 <- cmap_drugs %>% filter(dupl==1)
 cmap_drugs2 <- cmap_drugs %>% filter(dupl>1)
@@ -121,10 +121,10 @@ for (i in 1:length(smis)){
   cmap_drugs2$pubchem_cid[inds] <- pubchem
 }
 cmap_drugs2 <-cmap_drugs2 %>% unique()
-cmap_drugs <- rbind(cmap_drugs1,cmap_drugs2) %>% select(-dupl) %>% unique()
+cmap_drugs <- rbind(cmap_drugs1,cmap_drugs2) %>% dplyr::select(-dupl) %>% unique()
 saveRDS(cmap_drugs,"preprocessed_data/l1000_drugs_with_targets_all.rds") # 1223 unique drugs in different doses , times, cells, and qualities
 cmap_drugs <- left_join(cmap_drugs,tt,by="canonical_smiles") %>% filter(is_exemplar==1) %>%
-  select(canonical_smiles,'pubchem_cid'='pubchem_cid.x',Target,MOA,Phase,"Disease.Area")
+  dplyr::select(canonical_smiles,'pubchem_cid'='pubchem_cid.x',Target,MOA,Phase,"Disease.Area")
 cmap_drugs <- cmap_drugs %>% unique()
 saveRDS(cmap_drugs,"preprocessed_data/l1000_drugs_with_targets_exemplar.rds") # 1214 unique drugs in different doses , times, cells
 
