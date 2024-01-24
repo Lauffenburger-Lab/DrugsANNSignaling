@@ -101,9 +101,9 @@ inputPath = ensembles_path + 'models/'+ inputPattern
 # interestingSamples = pd.read_csv(ensembles_path+'interestingSamples.csv',index_col=1)
 TF = "Q08050"
 TF_gene = "FOXM1"
-drug = "CC(C)(C)c1cc(NC(=O)Nc2ccc(cc2)-c2cn3c(n2)sc2cc(OCCN4CCOCC4)ccc32)no1"
-drug_name = "quizartinib"
-sample = "CPC014_A375_6H:BRD-K93918653-001-01-4:10"
+drug = "C[C@]12O[C@H](C[C@]1(O)CO)n1c3ccccc3c3c4C(=O)NCc4c4c5ccccc5n2c4c13"
+drug_name = "lestaurtinib"
+sample = "CPC014_A375_6H:BRD-K23192422-001-01-1:10"
 moa_off_target = 'any'
 #'inhibit'
 
