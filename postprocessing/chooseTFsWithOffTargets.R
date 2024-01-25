@@ -60,8 +60,9 @@ p <- ggplot(df %>% filter(!is.na(drug)),aes(x=-delta,y=activity,color=score)) +
   geom_hline(yintercept = 0.25,linetype = 'dashed') + geom_hline(yintercept = 0.75,linetype = 'dashed')+
   ylim(c(0,1)) +
   scale_x_continuous(breaks = c(-0.4,-0.2,0,0.2,0.4),limits = c(-0.4,0.45))+
+  ggtitle('Off-target effects in A375 cell line')+
   theme_pubr() + 
-  theme(text = element_text(size=24),legend.position = 'right')+
+  theme(text = element_text(size=24),legend.position = 'right',plot.title = element_text(hjust = 0.5))+
   geom_label_repel(data=interestingTFs,
             aes(label=name),
             box.padding   = 0.75, 
