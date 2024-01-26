@@ -102,15 +102,16 @@ p_moa <- ggboxplot(data_all_plot_moas %>% select(MOA,TF,r) %>% unique(),
   stat_compare_means(method = 'kruskal.test',label.y = -0.4,label.x = 48.5,size=5)+
   coord_flip()
 moa_colors_zoomed <- moa_colors[which(levels(data_all_plot_moas$MOA) %in% top_moas$MOA)]
-p_moa <- p_moa + ggboxplot(data_all_plot_moas %>% select(MOA,TF,r) %>% filter(MOA %in% top_moas$MOA) %>% unique(),
+p_moa_zoomed <- ggboxplot(data_all_plot_moas %>% select(MOA,TF,r) %>% filter(MOA %in% top_moas$MOA) %>% unique(),
                            x='MOA',y='r',color='MOA',add='jitter')+
   scale_color_manual(values = moa_colors_zoomed) +
-  ylab('pearson`s r')+
+  ylab('pearson`s r')+ xlab('mechanism of action') +
   theme(text=element_text(family = 'Arial',size=24),
-        axis.text.y = element_text(family = 'Arial',size=14),
-        axis.title.y = element_blank(),
+        axis.text.y = element_text(family = 'Arial',size=24),
+        # axis.title.y = element_blank(),
         # axis.text.x = element_blank(),
         legend.position = 'none')+
+  stat_compare_means(method = 'kruskal.test',label.y = -0.2,label.x = 7.3,size=8)+
   coord_flip()
 print(p_moa)
 ggsave('../article_supplementary_info/performance_per_moa.eps',
@@ -120,7 +121,14 @@ ggsave('../article_supplementary_info/performance_per_moa.eps',
        width = 16,
        units = 'in',
        dpi = 600)
-
+print(p_moa_zoomed)
+ggsave('../article_supplementary_info/performance_per_moa_zoomed.eps',
+       device = cairo_ps,
+       plot = p_moa_zoomed,
+       height = 12,
+       width = 16,
+       units = 'in',
+       dpi = 600)
 ## Check per disease area
 data_all_plot_diseases <- data_all %>% group_by(Disease.Area,TF) %>% mutate(r = cor(prediction,activity)) %>% ungroup()
 data_all_plot_diseases <- data_all_plot_diseases %>% filter(!is.na(r))
@@ -133,7 +141,7 @@ p_disease <- ggboxplot(data_all_plot_diseases %>% filter(Disease.Area %in% top_d
   theme(text=element_text(family = 'Arial',size=24),
         axis.text.y = element_text(family = 'Arial',size=24),
         legend.position = 'none')+
-  stat_compare_means(method = 'kruskal.test',label.y = -0.1,label.x = 10,size=6)+
+  stat_compare_means(method = 'kruskal.test',label.y = -0.1,label.x = 10,size=8)+
   coord_flip()
 print(p_disease)
 ggsave('../article_supplementary_info/performance_per_disease.eps',
@@ -219,7 +227,7 @@ p_effect_moa <- ggboxplot(effect_data_moa_plot %>% select(MOA,TF,delta) %>%
                             mutate(delta=abs(delta)) %>% unique(),
                    x='MOA',y='delta',color='MOA',add='jitter')+
   scale_color_manual(values = moa_colors) +
-  ylab('absolute off-target effect') + xlab('mechanism of action') +
+  ylab(expression(abs(Delta*"TF"))) + xlab('mechanism of action') +
   theme(text=element_text(family = 'Arial',size=24),
         axis.text.y = element_blank(),
         # axis.title.x = element_blank(),
@@ -229,21 +237,31 @@ p_effect_moa <- ggboxplot(effect_data_moa_plot %>% select(MOA,TF,delta) %>%
   # stat_compare_means(ref.group = 'lysophospholipid receptor antagonist',label.y = 0.3,size=6,label = 'p.signif')+
   coord_flip()
 moa_colors_zoomed <- moa_colors[which(levels(effect_data_moa_plot$MOA) %in% top_moas$MOA)]
-p_effect_moa <- p_effect_moa + ggboxplot(effect_data_moa_plot %>% select(MOA,TF,delta) %>% 
+p_effect_moa_zoomed <- ggboxplot(effect_data_moa_plot %>% select(MOA,TF,delta) %>% 
                                            mutate(delta=abs(delta)) %>% filter(MOA %in% top_moas$MOA) %>% unique(),
                            x='MOA',y='delta',color='MOA',add='jitter')+
   scale_color_manual(values = moa_colors_zoomed) +
-  ylab('absolute off-target effect') +
+  ylab(expression(abs(Delta*"TF"))) + xlab('mechanism of action') +
   theme(text=element_text(family = 'Arial',size=24),
-        axis.text.y = element_text(family = 'Arial',size=14),
-        axis.title.y = element_blank(),
+        # axis.text.y = element_text(family = 'Arial',size=24),
+        # axis.title.y = element_blank(),
         # axis.text.x = element_blank(),
         legend.position = 'none')+
+  stat_compare_means(method = 'kruskal.test',label.y = 0.27,label.x = 2,size=8)+
   coord_flip()
 print(p_effect_moa)
 ggsave('../article_supplementary_info/effect_per_moa.eps',
        device = cairo_ps,
        plot = p_effect_moa,
+       height = 12,
+       width = 16,
+       units = 'in',
+       dpi = 600)
+
+print(p_effect_moa_zoomed)
+ggsave('../article_supplementary_info/effect_per_moa_zoomed.eps',
+       device = cairo_ps,
+       plot = p_effect_moa_zoomed,
        height = 12,
        width = 16,
        units = 'in',
@@ -259,12 +277,12 @@ effect_data_disease_plot$Disease.Area <- factor(effect_data_disease_plot$Disease
 p_disease <- ggboxplot(effect_data_disease_plot %>% select(Disease.Area,TF,delta) %>% 
                          mutate(delta=abs(delta)) %>% unique(),
                        x='Disease.Area',y='delta',color='Disease.Area',add='jitter')+
-  ylab('absolute off-target effect') + xlab('disease area') +
+  ylab(expression(abs(Delta*"TF"))) + xlab('disease area') +
   theme(text=element_text(family = 'Arial',size=24),
         axis.text.y = element_text(family = 'Arial',size=24),
         legend.position = 'none')+
   # stat_compare_means(ref.group = 'urology',label.y = 0.3,size=6,label = 'p.signif')+
-  stat_compare_means(method = 'kruskal.test',label.y = 0.3,size=6)+
+  stat_compare_means(method = 'kruskal.test',label.y = 0.25,label.x = 2,size=8)+
   coord_flip()
 print(p_disease)
 ggsave('../article_supplementary_info/effect_per_disease.eps',

@@ -10,9 +10,11 @@ source("viabilityModeling.R")
 # Initialize
 set <- 'NCI60_2021'
 md <- 'rf'
-type <- 'prior'
+type <- 'threshold'
 no_models <- 50
-th <- 44
+th_a549 <- 44
+th_a375 <- 44
+th_vcap <- 43
 
 
 # Load data---------
@@ -122,15 +124,24 @@ merged_interactions_all <- left_join(consensus_info,merged_interactions_all)
 merged_interactions_all <- merged_interactions_all %>% filter(!is.na(`Prior knowledge`))
 merged_interactions_all <- merged_interactions_all %>% mutate(Inferred = 1*(Inferred=='Interaction'))
 merged_interactions_all <- merged_interactions_all %>% mutate(`Prior knowledge` = 1*(`Prior knowledge`=='Interaction'))
+# merged_interactions_all <- merged_interactions_all %>% select("drug","variable","Prior knowledge","Inferred",
+#                                                               "model_no","consensus_inferrence","mean_frequency")
+# merged_interactions_all <- merged_interactions_all %>% mutate(Inferred = ifelse((consensus_inferrence==3) & (mean_frequency>=th/no_models),1,0))
 merged_interactions_all <- merged_interactions_all %>% select("drug","variable","Prior knowledge","Inferred",
-                                                              "model_no","consensus_inferrence","mean_frequency")
+                                                              "model_no","consensus_inferrence","mean_frequency",
+                                                              "frequency.A375","frequency.A549",
+                                                              "frequency.VCAP","mean_frequency")
 # merged_interactions_all <- merged_interactions_all %>% group_by(drug,variable) %>% 
 #   mutate(model_counts = sum(Inferred==1)) %>% ungroup()
 if (type=='threshold'){
   # merged_interactions_all <- merged_interactions_all %>% mutate(model_counts=model_counts/no_models)
   # print(all(merged_interactions_all %>% filter(model_counts==0) %>% mutate(logic = (Inferred==`Prior knowledge`)) %>% select(logic)))
-  merged_interactions_all <- merged_interactions_all %>% mutate(Inferred = ifelse((consensus_inferrence==3) & (mean_frequency>=th/no_models),1,0))
-  merged_interactions_all <- merged_interactions_all %>% select(-mean_frequency,-consensus_inferrence)
+  merged_interactions_all <- merged_interactions_all %>%
+    mutate(Inferred = ifelse((frequency.A375>=th_a375/no_models)|(frequency.A549>=th_a549/no_models)|(frequency.VCAP>=th_vcap/(no_models+1)),
+                             1,
+                             0))
+  merged_interactions_all <- merged_interactions_all %>% select(-mean_frequency,-consensus_inferrence) %>%
+    select(-frequency.A375,-frequency.A549,-frequency.VCAP)
   merged_interactions_all <- distinct(merged_interactions_all)
 }else if (type=='frequency'){
   merged_interactions_all <- merged_interactions_all %>% mutate(Inferred=mean_frequency)
@@ -180,18 +191,17 @@ total_results <- viability_model(data_new,
                                  colnames(drug_targets),
                                  dataset=set,
                                  lethality_data_path = "./",
-                                 model = md,
-                                 no_models=50)
+                                 model = md)
 
 mdls <- total_results$mdls
 # final_results <- total_results$final_results
 res_test <- total_results$res_test
 res_test_all <- total_results$res_test_all
 
-#saveRDS(final_results,paste0(type,'_results_',toupper(md),'_',toupper(set),'.rds'))
-saveRDS(mdls,paste0('models_',type,'_',toupper(md),'_',toupper(set),'.rds'))
-saveRDS(res_test,paste0('predictions_A549_',type,'_',toupper(md),'_',toupper(set),'.rds'))
-saveRDS(res_test_all,paste0('predictions_all_',type,'_',toupper(md),'_',toupper(set),'.rds'))
+#saveRDS(final_results,paste0(type,'_results_',toupper(md),'_new.rds'))
+saveRDS(mdls,paste0('models_',type,'_',toupper(md),'_new.rds'))
+saveRDS(res_test,paste0('predictions_A549_',type,'_',toupper(md),'_new.rds'))
+saveRDS(res_test_all,paste0('predictions_all_',type,'_',toupper(md),'_new.rds'))
 
 # colnames(final_results)[c(3,5)] <- c('LOOCV A549','LOOCV A549 shuffled')
 # final_results <- final_results %>% gather('data','r')
@@ -215,14 +225,14 @@ p2 <- ggscatter(res_test_all %>% filter(data=='shuffled'),x='predicted',y='EC50'
         plot.title = element_text(hjust = 0.5))
 p <- p1+p2
 print(p)
-ggsave(paste0('../results/viability_analysis_results/','performance_',type,'_',toupper(md),'_',toupper(set),'.eps'),
+ggsave(paste0('../results/viability_analysis_results/','performance_',type,'_',toupper(md),'_new.eps'),
        plot=p,
        device = cairo_ps,
        height = 10,
        width = 17,
        units = 'in',
        dpi = 600)
-ggsave(paste0('../results/viability_analysis_results/','performance_',type,'_',toupper(md),'_',toupper(set),'.png'),
+ggsave(paste0('../results/viability_analysis_results/','performance_',type,'_',toupper(md),'_new.png'),
        plot=p,
        height = 10,
        width = 17,

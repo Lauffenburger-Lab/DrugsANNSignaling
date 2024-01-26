@@ -2,18 +2,17 @@
 ### Inputs: ###
 # 1. dataset : c("NCI60_2021","GDSC_2020(v2-8.2)","FIMM_2016","UHNBreast_2019","PRISM_2020","gCSI_2019","CTRPv2_2015","GRAY_2017","CCLE_2015")
 # 2. model : c('lm','rf','xgTree','neuralnet','gaussprLinear','knn','svmLinear','lasso','ridge','elasticnet')
-# 3. no_models : number of models used to infer drug-target interactions (default = 50 models, when we used 50 models)
-# 4. data_used : pre=processed data that will be used fro training
-# 5. lethality_data_path : the path were every available lethality datase is saved in rds format
-# 6. available_targets " the available targets that are going to be used.
+# 3. data_used : pre=processed data that will be used fro training
+# 4. lethality_data_path : the path were every available lethality datase is saved in rds format
+# 5. available_targets " the available targets that are going to be used.
 viability_model <- function(data_used,
                             available_targets,
                             dataset=c("NCI60_2021","GDSC_2020(v2-8.2)","FIMM_2016",
                                       "UHNBreast_2019","PRISM_2020","gCSI_2019",
                                       "CTRPv2_2015","GRAY_2017","CCLE_2015"),
                             lethality_data_path ='',
-                            model = c('lm','rf','xgbTree','neuralnet','gaussprLinear','knn','svmLinear','lasso','ridge','elasticnet'),
-                            no_models=50){
+                            model = c('lm','rf','xgbTree','neuralnet','gaussprLinear',
+                                      'knn','svmLinear','lasso','ridge','elasticnet')){
   library(tidyverse)
   library(readr)
   library(caret)

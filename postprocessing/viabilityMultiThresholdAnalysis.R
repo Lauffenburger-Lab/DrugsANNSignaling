@@ -33,7 +33,7 @@ data <- readRDS(paste0('./',set,'.rds'))
 
 # Create initial linear models using different number of models----------------
 # Do it for multiple thresholds to check. And then choose one
-initial_models <- c('elasticnet')
+initial_models <- c('lasso','ridge','elasticnet')
 performance_df <- data.frame()
 for (md in initial_models){
   test_corr <- NULL
@@ -47,10 +47,19 @@ for (md in initial_models){
     merged_interactions_all <- merged_interactions_all %>% filter(!is.na(`Prior knowledge`))
     merged_interactions_all <- merged_interactions_all %>% mutate(Inferred = 1*(Inferred=='Interaction'))
     merged_interactions_all <- merged_interactions_all %>% mutate(`Prior knowledge` = 1*(`Prior knowledge`=='Interaction'))
+    # merged_interactions_all <- merged_interactions_all %>% select("drug","variable","Prior knowledge","Inferred",
+    #                                                               "model_no","consensus_inferrence","mean_frequency")
+    # merged_interactions_all <- merged_interactions_all %>% mutate(Inferred = ifelse((consensus_inferrence==3) & (mean_frequency>=th/no_models),1,0))
     merged_interactions_all <- merged_interactions_all %>% select("drug","variable","Prior knowledge","Inferred",
-                                                                  "model_no","consensus_inferrence","mean_frequency")
-    merged_interactions_all <- merged_interactions_all %>% mutate(Inferred = ifelse((consensus_inferrence==3) & (mean_frequency>=th/no_models),1,0))
-    merged_interactions_all <- merged_interactions_all %>% select(-mean_frequency,-consensus_inferrence)
+                                                                  "model_no","consensus_inferrence","mean_frequency",
+                                                                  "frequency.A375","frequency.A549",
+                                                                  "frequency.VCAP","mean_frequency")
+    merged_interactions_all <- merged_interactions_all %>%
+      mutate(Inferred = ifelse((frequency.A375>=th/no_models)|(frequency.A549>=th/no_models)|(frequency.VCAP>=th/(no_models+1)),
+                               1,
+                               0))
+    merged_interactions_all <- merged_interactions_all %>% select(-mean_frequency,-consensus_inferrence) %>%
+      select(-frequency.A375,-frequency.A549,-frequency.VCAP)
     merged_interactions_all <- distinct(merged_interactions_all)
     
     inferred_interactions <- merged_interactions_all %>% select(drug,variable,Inferred)
@@ -86,8 +95,7 @@ for (md in initial_models){
                                      colnames(drug_targets),
                                      dataset=set,
                                      lethality_data_path = "./",
-                                     model = md,
-                                     no_models=50)
+                                     model = md)
     
     res_test_all <- total_results$res_test_all
     res_test_all <- res_test_all %>% group_by(data) %>% mutate(correlation = cor(predicted,EC50)) %>% ungroup()
@@ -95,11 +103,11 @@ for (md in initial_models){
     res_test_all <- res_test_all %>% mutate(model=md)
     performance_df <- rbind(performance_df,
                             res_test_all)
-    # saveRDS(performance_df,'../results/viability_analysis_results/viability_results_LOOCV_multi_threshold_analysis.rds')
+    saveRDS(performance_df,'../results/viability_analysis_results/viability_results_LOOCV_multi_threshold_analysis_new.rds')
     print(paste0('Using ',md,' finished: ',th,'/',no_models))
   }
 }
-# saveRDS(performance_df,'../results/viability_analysis_results/viability_results_LOOCV_multi_threshold_analysis.rds')
+saveRDS(performance_df,'../results/viability_analysis_results/viability_results_LOOCV_multi_threshold_analysis_new.rds')
 
 ## plot results----------------------------------------------
 performance_df <- readRDS('../results/viability_analysis_results/viability_results_LOOCV_multi_threshold_analysis.rds')
