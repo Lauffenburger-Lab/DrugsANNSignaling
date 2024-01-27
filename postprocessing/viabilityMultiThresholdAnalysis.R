@@ -103,14 +103,14 @@ for (md in initial_models){
     res_test_all <- res_test_all %>% mutate(model=md)
     performance_df <- rbind(performance_df,
                             res_test_all)
-    saveRDS(performance_df,'../results/viability_analysis_results/viability_results_LOOCV_multi_threshold_analysis_new.rds')
+    saveRDS(performance_df,'../results/viability_analysis_results/viability_results_LOOCV_multi_threshold_analysis.rds')
     print(paste0('Using ',md,' finished: ',th,'/',no_models))
   }
 }
-saveRDS(performance_df,'../results/viability_analysis_results/viability_results_LOOCV_multi_threshold_analysis_new.rds')
+saveRDS(performance_df,'../results/viability_analysis_results/viability_results_LOOCV_multi_threshold_analysis.rds')
 
 ## plot results----------------------------------------------
-performance_df <- readRDS('../results/viability_analysis_results/viability_results_LOOCV_multi_threshold_analysis.rds')
+performance_df <- readRDS('../results/viability_analysis_results/viability_results_LOOCV_multi_threshold_analysis_new.rds')
 performance_df$data <- factor(performance_df$data,levels = c('test','shuffled'))
 p1 <- ggplot(performance_df %>% select(-predicted,-EC50) %>% unique()%>% 
          filter(model %in% c('elasticnet','lasso','xgbTree','svmLinear','gaussprLinear')), #,'rf','neuralnet'
@@ -228,19 +228,82 @@ ggsave(paste0('../results/viability_analysis_results/performance_prior_all_model
        units = 'in',
        dpi = 600)
 
-# compare prior and frequency
+### show also barplot across all thresholds
+df_for_plot <- performance_df %>% select(-predicted,-EC50) %>%
+  filter(model!='LM') %>% unique() %>%
+  group_by(data,model) %>% mutate(mu=mean(correlation)) %>% mutate(se=sd(correlation)/sqrt(9))%>% ungroup() %>%
+  select(model,mu,se,data) %>% unique()
+tmp <- df_for_plot %>% filter(data=='test') %>% select(-data) %>% unique()
+tmp <- tmp%>%arrange(-mu)
+df_for_plot$model <- factor(df_for_plot$model,levels = tmp$model)
+ggplot(df_for_plot,aes(x=model,y=mu,fill=model)) +
+  geom_bar(stat = 'identity')+
+  geom_errorbar(aes(ymax = mu + se,ymin=mu-se),size=1)+
+  geom_hline(yintercept = 0,size=1,linetype='dashed',color='black')+
+  scale_y_continuous(breaks = c(-1.25,-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1,1.25),limits = c(-0.9,1))+
+  theme_pubr(base_size = 24,base_family = 'Arial') +
+  theme(text = element_text(size = 24,family = 'Arial'),
+        axis.text.x = element_blank(),
+        axis.title.x = element_blank(),
+        legend.text = element_text(size = 18,family = 'Arial')) +
+  facet_wrap(~data)
+ggsave(paste0('../results/viability_analysis_results/performance_multithresh_all_models_barplot.eps'),
+       device = cairo_ps,
+       height = 10.5,
+       width = 14,
+       units = 'in',
+       dpi = 600)
+
+# Barplots for choosen threshold models
+thresh_files <- list.files('../results/viability_analysis_results/',pattern = 'predictions_all_threshold')
+threshold_performance <- data.frame()
+for (file in thresh_files){
+  md <- str_split_fixed(file,pattern = '.rds',n=2)[1,1]
+  md <- str_split_fixed(md,pattern = '_',n=5)[1,4]
+  threshold_performance <- rbind(threshold_performance,
+                                 readRDS(paste0('../results/viability_analysis_results/',file)) %>% mutate(model=md))
+}
+threshold_performance <- threshold_performance %>% filter(!(model %in% c('LASSO_CTRPV2_2015','LASSO_PRISM_2020')))
+# threshold_performance <- threshold_performance %>% mutate(model=ifelse(grepl('NCI60',model),'RF',model))
+threshold_performance <- threshold_performance %>% group_by(data,model) %>% mutate(correlation = cor(predicted,EC50)) %>% ungroup()
+tmp <- threshold_performance %>% select(-predicted,-EC50) %>%
+  filter(model!='LM') %>% filter(data=='test') %>% unique() 
+threshold_performance$model <- factor(threshold_performance$model,levels = tmp$model[order(-tmp$correlation)])
+threshold_performance$data <- factor(threshold_performance$data,levels = c('test','shuffled'))
+ggplot(threshold_performance %>% select(-predicted,-EC50) %>%
+         filter(model!='LM') %>% unique(),aes(x=model,y=correlation,fill=model)) +
+  geom_bar(stat = 'identity')+
+  geom_hline(yintercept = 0,size=1,linetype='dashed',color='black')+
+  scale_y_continuous(breaks = c(-1.25,-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1,1.25),limits = c(-0.9,1))+
+  theme_pubr(base_size = 24,base_family = 'Arial') +
+  theme(text = element_text(size = 24,family = 'Arial'),
+        axis.text.x = element_blank(),
+        axis.title.x = element_blank(),
+        legend.text = element_text(size = 18,family = 'Arial')) +
+  facet_wrap(~data)
+ggsave(paste0('../results/viability_analysis_results/performance_selected_thresholds_models_barplot.eps'),
+       device = cairo_ps,
+       height = 10.5,
+       width = 14,
+       units = 'in',
+       dpi = 600)
+
+
+# compare prior and thresholds
 res <- rbind(prior_performance %>% filter(data=='test') %>% filter(model!='lm') %>% select(model,correlation) %>% mutate(type='prior') %>% unique(),
-             frequency_performance %>% filter(data=='test') %>% filter(model!='lm') %>% select(model,correlation) %>% mutate(type='frequency')%>% unique())
+             threshold_performance %>% filter(model!='lm') %>% select(model,correlation,data) %>% 
+               mutate(type=ifelse(data=='test','cell line-based threshold','shuffled')) %>% unique() %>% select(-data))
 res <- rbind(res,
-             performance_df %>% filter(frequency==0.62) %>% filter(data=='test') %>% 
-               filter(model!='lm') %>% select(model,correlation) %>% mutate(type='threshold:0.62')%>% unique() )
+             performance_df %>% filter(frequency==0.84) %>% filter(data=='test') %>% 
+               filter(model!='lm') %>% select(model,correlation) %>% mutate(type='threshold:0.84')%>% unique() )
+res$type <- factor(res$type,levels = c('prior','cell line-based threshold','threshold:0.84','shuffled')) 
 ggboxplot(res,x='type',y='correlation',color='type',add='jitter') +
+  scale_y_continuous(breaks=c(-0.5,-0.25,0,0.25,0.5,0.75,1))+
   ylab('pearson`s r')+
   theme(text = element_text(size = 24,family = 'Arial'),axis.title.x = element_blank()) +
   geom_hline(yintercept = 0,size=1,linetype='dashed',color='black') + 
-  stat_compare_means(comparisons = list(c('prior','frequency'),c('prior','threshold:0.62')),method='wilcox.test')
-ggsave(paste0('../results/viability_analysis_results/compate_input_types_across_all_models.eps'),
-       device = cairo_ps,
+  stat_compare_means(comparisons = list(c('prior','cell line-based threshold')),method='wilcox.test')
+ggsave(paste0('../results/viability_analysis_results/compate_input_types_across_all_models.png'),
        height = 10.5,
        width = 14,
        units = 'in',
@@ -250,8 +313,8 @@ ggsave(paste0('../results/viability_analysis_results/compate_input_types_across_
 res <- rbind(prior_performance %>% filter(model=='LASSO') %>% mutate(type='prior') %>% unique(),
              frequency_performance %>% filter(model=='LASSO') %>% mutate(type='frequency')%>% unique())
 res <- rbind(res,
-             performance_df %>% filter(frequency==0.62) %>% filter(model=='lasso') %>% unique() %>%
-               select(all_of(colnames(frequency_performance)))%>% mutate(type='threshold:0.62'))
+             threshold_performance %>% filter(model=='LASSO') %>% unique() %>%
+               select(all_of(colnames(frequency_performance)))%>% mutate(type='selected threshold'))
 p1 <- ggscatter(res %>% filter(data=='test'),x='predicted',y='EC50',cor.coef = T,rug = T,cor.coef.size = 8) +
   xlab('Predicted value') + ylab('True value')+ ggtitle('LASSO')+
   geom_abline(intercept = 0,slope=1,linetype=2,color='red',linewidth=2)+
@@ -278,8 +341,8 @@ ggsave(paste0('../results/viability_analysis_results/LASSO_performance_all.eps')
 res <- rbind(prior_performance %>% filter(model==toupper('svmLinear')) %>% mutate(type='prior') %>% unique(),
              frequency_performance %>% filter(model==toupper('svmLinear')) %>% mutate(type='frequency')%>% unique())
 res <- rbind(res,
-             performance_df %>% filter(frequency==0.62) %>% filter(model=='svmLinear') %>% unique() %>%
-               select(all_of(colnames(frequency_performance)))%>% mutate(type='threshold:0.62'))
+             threshold_performance %>% filter(model=='SVMLINEAR') %>% unique() %>%
+               select(all_of(colnames(frequency_performance)))%>% mutate(type='selected threshold'))
 p1 <- ggscatter(res %>% filter(data=='test'),x='predicted',y='EC50',cor.coef = T,rug = T,cor.coef.size = 8) +
   xlab('Predicted value') + ylab('True value')+ ggtitle('SVM regression')+
   geom_abline(intercept = 0,slope=1,linetype=2,color='red',linewidth=2)+
@@ -306,8 +369,8 @@ ggsave(paste0('../results/viability_analysis_results/SVM_performance_all.eps'),
 res <- rbind(prior_performance %>% filter(model==toupper('xgbTree')) %>% mutate(type='prior') %>% unique(),
              frequency_performance %>% filter(model==toupper('xgbTree')) %>% mutate(type='frequency')%>% unique())
 res <- rbind(res,
-             performance_df %>% filter(frequency==0.62) %>% filter(model=='xgbTree') %>% unique() %>%
-               select(all_of(colnames(frequency_performance)))%>% mutate(type='threshold:0.62'))
+             threshold_performance %>% filter(model=='XGBTREE') %>% unique() %>%
+               select(all_of(colnames(frequency_performance)))%>% mutate(type='selected threshold'))
 p1 <- ggscatter(res %>% filter(data=='test'),x='predicted',y='EC50',cor.coef = T,rug = T,cor.coef.size = 8) +
   xlab('Predicted value') + ylab('True value')+ ggtitle('XGBoost decision trees')+
   geom_abline(intercept = 0,slope=1,linetype=2,color='red',linewidth=2)+
@@ -324,6 +387,34 @@ p2 <- ggscatter(res %>% filter(data=='shuffled'),x='predicted',y='EC50',cor.coef
 p <- p1/p2
 print(p)
 ggsave(paste0('../results/viability_analysis_results/XGBoost_performance_all.eps'),
+       device = cairo_ps,
+       height = 12,
+       width = 16,
+       units = 'in',
+       dpi = 600)
+
+# RF 
+res <- rbind(prior_performance %>% filter(model==toupper('rf')) %>% mutate(type='prior') %>% unique(),
+             frequency_performance %>% filter(model==toupper('rf')) %>% mutate(type='frequency')%>% unique())
+res <- rbind(res,
+             threshold_performance %>% filter(model=='RF') %>% unique() %>%
+               select(all_of(colnames(frequency_performance)))%>% mutate(type='selected threshold'))
+p1 <- ggscatter(res %>% filter(data=='test'),x='predicted',y='EC50',cor.coef = T,rug = T,cor.coef.size = 8) +
+  xlab('Predicted value') + ylab('True value')+ ggtitle('XGBoost decision trees')+
+  geom_abline(intercept = 0,slope=1,linetype=2,color='red',linewidth=2)+
+  theme(text=element_text(size=22,family='Arial'),
+        plot.title = element_text(hjust = 0.5)) +
+  facet_wrap(~type)
+# geom_point(data = res_test %>% filter(data=='test'),aes(x=predicted,y=EC50),color='orange',shape=17,size = 4)
+p2 <- ggscatter(res %>% filter(data=='shuffled'),x='predicted',y='EC50',cor.coef = T,rug = T,cor.coef.size = 8) +
+  xlab('Predicted value') + ylab('True value')+ ggtitle('XGBoost decision trees with shuffled data')+
+  geom_abline(intercept = 0,slope=1,linetype=2,color='red',linewidth=2)+
+  theme(text=element_text(size=22,family='Arial'),
+        plot.title = element_text(hjust = 0.5))+
+  facet_wrap(~type)
+p <- p1/p2
+print(p)
+ggsave(paste0('../results/viability_analysis_results/RF_performance_all.eps'),
        device = cairo_ps,
        height = 12,
        width = 16,

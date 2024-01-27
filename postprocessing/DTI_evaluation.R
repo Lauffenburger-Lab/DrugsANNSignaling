@@ -1,9 +1,11 @@
 library(tidyverse)
 library(reshape2)
+library(GGally)
 library(ggsignif)
 library(ggplot2)
 library(ggpubr)
 library(ggExtra)
+library(ggrepel)
 library(viridis)
 library(patchwork)
 library(caret)
@@ -373,3 +375,34 @@ ggsave('../figures/figure2C.eps',
        height = 9,
        units = "in",
        dpi = 600)
+
+### Check how consensus varies with frequency scores-----------------------------
+consensus <- readRDS('../results/consensus_interaction_info.rds')
+ggpairs(consensus %>% select(c('A375'='frequency.A375'),
+                             c('A549'='frequency.A549'),
+                             c('VCAP'='frequency.VCAP'),
+                             c('average'='mean_frequency')),
+        upper = list(continuous = wrap("cor", size=12)),
+        axisLabels = "show")+
+  xlab('frequency of appearance') + ylab('frequency of appearance') +
+  theme(text = element_text(family = 'Arial',size=20))
+ggsave('../article_supplementary_info/frequencies_correlation.eps',
+       device=cairo_ps,
+       width = 12,
+       height = 12,
+       units = 'in',
+       dpi=600)
+ggboxplot(distinct(consensus %>% filter(consensus_inferrence>0) %>% 
+            gather('cell line','frequency',-drug,-target,-consensus_inferrence,-mean_frequency) %>%
+            mutate(`cell line`=substr(`cell line`,start=11,nchar(`cell line`))) %>%
+            select(-mean_frequency)),
+          x='consensus_inferrence',y='frequency',color='cell line')+
+  geom_hline(yintercept = 0.5,color = 'black',linetype='dashed',linewidth=1)+
+  ylab('frequency of appearance') + xlab('consensus of cell lines')+
+  theme(text = element_text(family = 'Arial',size=20))
+ggsave('../article_supplementary_info/consensus_inferrence_vs_frequency.eps',
+       device=cairo_ps,
+       width = 12,
+       height = 12,
+       units = 'in',
+       dpi=600)
