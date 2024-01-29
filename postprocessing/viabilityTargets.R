@@ -9,7 +9,7 @@ source("viabilityModeling.R")
 
 # Initialize
 set <- 'NCI60_2021'
-md <- 'rf'
+md <- 'lasso'
 type <- 'threshold'
 no_models <- 50
 th_a549 <- 44
@@ -112,7 +112,7 @@ data <- data %>% filter(!is.na(EC50))
 data <- data %>% select(-cellid,-exp_id) %>% unique()
 # saveRDS(data,'NCI60_2021.rds')
 
-# Skip above and run this
+# Skip above and run this--------------------------------
 data <- readRDS(paste0('./',set,'.rds'))
   
 ### Use DTI and cell line info as inputs---------------------------------------
@@ -183,6 +183,15 @@ if(type!='prior'){
   }
   # data_new[,3:(ncol(data_new)-9)] <- scale(data_new[,3:(ncol(data_new)-9)],scale=F)
 }
+#Drop targets that never appear
+drug_sums <- apply(data_new[,3:(ncol(data_new)-9)],2,sum)
+targets_to_keep <- names(drug_sums)[which(drug_sums>0)]
+data_new <- data_new %>% select(all_of(c('drugid','smiles',targets_to_keep,
+                                         "A549","HT29","MCF7","MDAMB231","PC3",
+                                         "SKBR3","SKMEL28","SW620","EC50")))
+target_sums <- apply(data_new[,3:(ncol(data_new)-9)],1,sum)
+drugs_to_keep <- data_new$smiles[which(target_sums>0)]
+data_new <- data_new %>% filter(smiles %in% drugs_to_keep)
 # hist(as.matrix(data_new[,3:(ncol(data_new)-9)]),10)
 
 ### Train ML model with LOOCV procedure----------------------------------
