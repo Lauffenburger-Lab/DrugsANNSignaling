@@ -276,6 +276,7 @@ ggplot(df_for_plot,aes(x=model,y=mu,fill=model)) +
   geom_errorbar(aes(ymax = mu + se,ymin=mu-se),size=1)+
   geom_hline(yintercept = 0,size=1,linetype='dashed',color='black')+
   scale_y_continuous(breaks = c(-1.25,-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1,1.25),limits = c(-0.9,1))+
+  ylab('correlation')+
   theme_pubr(base_size = 24,base_family = 'Arial') +
   theme(text = element_text(size = 24,family = 'Arial'),
         axis.text.x = element_blank(),
