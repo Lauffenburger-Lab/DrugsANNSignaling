@@ -95,8 +95,8 @@ p_moa <- ggboxplot(data_all_plot_moas %>% select(MOA,TF,r) %>% unique(),
   scale_color_manual(values = moa_colors) +
   ylab('pearson`s r') + xlab('mechanism of action') +
   theme(text=element_text(family = 'Arial',size=24),
-        axis.text.y = element_text(family = 'Arial',size=14),
-        # axis.title.x = element_blank(),
+        # axis.text.y = element_text(family = 'Arial',size=22),
+        axis.title.y = element_blank(),
         # axis.text.x = element_blank(),
         legend.position = 'none')+
   stat_compare_means(method = 'kruskal.test',label.y = -0.4,label.x = 48.5,size=5)+
@@ -106,12 +106,14 @@ p_moa_zoomed <- ggboxplot(data_all_plot_moas %>% select(MOA,TF,r) %>% filter(MOA
                            x='MOA',y='r',color='MOA',add='jitter')+
   scale_color_manual(values = moa_colors_zoomed) +
   ylab('pearson`s r')+ xlab('mechanism of action') +
+  ggtitle('Mechanism of Action')+
   theme(text=element_text(family = 'Arial',size=24),
         axis.text.y = element_text(family = 'Arial',size=24),
-        # axis.title.y = element_blank(),
+        axis.title.y = element_blank(),
         # axis.text.x = element_blank(),
+        plot.title = element_text(size=26,hjust = 0.5),
         legend.position = 'none')+
-  stat_compare_means(method = 'kruskal.test',label.y = -0.2,label.x = 7.3,size=8)+
+  stat_compare_means(method = 'kruskal.test',label.y = -0.2,label.x = 7.0,size=8)+
   coord_flip()
 print(p_moa)
 ggsave('../article_supplementary_info/performance_per_moa.eps',
@@ -125,7 +127,7 @@ print(p_moa_zoomed)
 ggsave('../article_supplementary_info/performance_per_moa_zoomed.eps',
        device = cairo_ps,
        plot = p_moa_zoomed,
-       height = 12,
+       height = 6,
        width = 16,
        units = 'in',
        dpi = 600)
@@ -138,8 +140,11 @@ data_all_plot_diseases$Disease.Area <- factor(data_all_plot_diseases$Disease.Are
 p_disease <- ggboxplot(data_all_plot_diseases %>% filter(Disease.Area %in% top_diseases$Disease.Area) %>% select(Disease.Area,TF,r) %>% unique(),
           x='Disease.Area',y='r',color='Disease.Area',add='jitter')+
   ylab('pearson`s r') + xlab('disease area') +
+  ggtitle('Disease area') +
   theme(text=element_text(family = 'Arial',size=24),
         axis.text.y = element_text(family = 'Arial',size=24),
+        axis.title.y = element_blank(),
+        plot.title = element_text(size=26,hjust = 0.5),
         legend.position = 'none')+
   stat_compare_means(method = 'kruskal.test',label.y = -0.1,label.x = 10,size=8)+
   coord_flip()
@@ -147,7 +152,7 @@ print(p_disease)
 ggsave('../article_supplementary_info/performance_per_disease.eps',
        device = cairo_ps,
        plot = p_disease,
-       height = 12,
+       height = 6,
        width = 16,
        units = 'in',
        dpi = 600)
@@ -242,10 +247,12 @@ p_effect_moa_zoomed <- ggboxplot(effect_data_moa_plot %>% select(MOA,TF,delta) %
                            x='MOA',y='delta',color='MOA',add='jitter')+
   scale_color_manual(values = moa_colors_zoomed) +
   ylab(expression(abs(Delta*"TF"))) + xlab('mechanism of action') +
+  ggtitle('Mechanism of Action')+
   theme(text=element_text(family = 'Arial',size=24),
         # axis.text.y = element_text(family = 'Arial',size=24),
-        # axis.title.y = element_blank(),
+        axis.title.y = element_blank(),
         # axis.text.x = element_blank(),
+        plot.title = element_text(size=26,hjust = 0.5),
         legend.position = 'none')+
   stat_compare_means(method = 'kruskal.test',label.y = 0.27,label.x = 2,size=8)+
   coord_flip()
@@ -262,7 +269,7 @@ print(p_effect_moa_zoomed)
 ggsave('../article_supplementary_info/effect_per_moa_zoomed.eps',
        device = cairo_ps,
        plot = p_effect_moa_zoomed,
-       height = 12,
+       height = 6,
        width = 16,
        units = 'in',
        dpi = 600)
@@ -278,8 +285,11 @@ p_disease <- ggboxplot(effect_data_disease_plot %>% select(Disease.Area,TF,delta
                          mutate(delta=abs(delta)) %>% unique(),
                        x='Disease.Area',y='delta',color='Disease.Area',add='jitter')+
   ylab(expression(abs(Delta*"TF"))) + xlab('disease area') +
+  ggtitle('Disease area')+
   theme(text=element_text(family = 'Arial',size=24),
         axis.text.y = element_text(family = 'Arial',size=24),
+        axis.title.y = element_blank(),
+        plot.title = element_text(size=26,hjust = 0.5),
         legend.position = 'none')+
   # stat_compare_means(ref.group = 'urology',label.y = 0.3,size=6,label = 'p.signif')+
   stat_compare_means(method = 'kruskal.test',label.y = 0.25,label.x = 2,size=8)+
@@ -288,7 +298,7 @@ print(p_disease)
 ggsave('../article_supplementary_info/effect_per_disease.eps',
        device = cairo_ps,
        plot = p_disease,
-       height = 12,
+       height = 6,
        width = 16,
        units = 'in',
        dpi = 600)
