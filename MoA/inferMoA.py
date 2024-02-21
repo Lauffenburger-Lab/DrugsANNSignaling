@@ -122,6 +122,10 @@ Path(ensembles_path + 'InteractionScores/MergedInteractions/'+drug_name).mkdir(p
 ### Load network
 #Load network
 networkList, nodeNames, modeOfAction = bionetwork.loadNetwork('../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Model.tsv')
+#### BE CAREFUL!!!!
+#### In networkList the sources and edges are flipped !!!
+#### So flip them again here!
+networkList = networkList[[1,0],:] # now : 1st row == sources , 2nd row == targets
 annotation = pd.read_csv('../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Annotation.tsv', sep='\t')
 uniprot2gene = dict(zip(annotation['code'], annotation['name']))
 bionetParams = bionetwork.trainingParameters(iterations = 120, clipping=1, targetPrecision=1e-6, leak=0.01) # for A549 was 120

@@ -42,7 +42,7 @@ if type(ConvertToEmpProb) == str :
     ConvertToEmpProb = eval(ConvertToEmpProb)
 inputPattern = args.inputPattern
 inputPattern = cell + "_" + inputPattern
-inputPath = ensembles_path + inputPattern
+inputPath = ensembles_path+ 'models/' + inputPattern
 
 
 ### Choose TF and drug to investigate
@@ -125,21 +125,21 @@ for i in range(numberOfModels):
     model.eval()
     Yhat, YhatFull = model(X)
     mask = torch.mm(1.0*(X!=0).double(),model.drugLayer.mask.T)
-    
+
     Xin = model.drugLayer(X)
-    
+
     # on-target only
     Xin_masked = torch.mul(Xin, mask)
     fullX_masked = model.inputLayer(Xin_masked)
     YhatFull_masked = model.network(fullX_masked)
     Yhat_masked_1 = model.projectionLayer(YhatFull_masked)
-    
+
     # off-target only
     Xin_masked_2 = torch.mul(Xin, 1.0 - mask)
     fullX_masked = model.inputLayer(Xin_masked_2)
     YhatFull_masked = model.network(fullX_masked)
     Yhat_masked_2 = model.projectionLayer(YhatFull_masked)
-    
+
     all_effects.append(Yhat[:,TF_ind].item())
     on_target.append(Yhat_masked_1[:,TF_ind].item())
     off_target.append(Yhat_masked_2[:,TF_ind].item())
@@ -158,7 +158,7 @@ for i in range(numberOfModels):
     YhatFull_masked = model.network(fullX_ko)
     Yhat_ko = model.projectionLayer(YhatFull_masked)
     cdk2_KO.append(Yhat_ko[:,TF_ind].item())
-    
+
     # target KO only
     # ADRB1 KOs
     Xin_ko = torch.zeros(1,Xin.shape[1])
@@ -188,7 +188,7 @@ for i in range(numberOfModels):
     YhatFull_masked = model.network(fullX_ko)
     Yhat_ko = model.projectionLayer(YhatFull_masked)
     flt3_KO.append(Yhat_ko[:,TF_ind].item())
-    
+
     # combinations KOs
     # CDK1+FLT3 KOs
     Xin_ko = torch.zeros(1,Xin.shape[1])
@@ -206,14 +206,14 @@ for i in range(numberOfModels):
     YhatFull_masked = model.network(fullX_ko)
     Yhat_ko = model.projectionLayer(YhatFull_masked)
     egfr_cdk2.append(Yhat_ko[:,TF_ind].item())
-    
+
     #dmso simulation
     X_dmso = torch.zeros(X.shape)
     X_dmso[:,dmso_ind]=1.04139269
     X_dmso = X_dmso.double()
     Yhat_dmso, YhatFull_dmso = model(X_dmso)
     dmso_simulation.append(Yhat_dmso[:,TF_ind].item())
-    
+
     print2log('Finished model %s'%i)
 
 insilico_results = pd.DataFrame({'DMSO':dmso_simulation,'lestaurtinib':all_effects,
@@ -222,7 +222,7 @@ insilico_results = pd.DataFrame({'DMSO':dmso_simulation,'lestaurtinib':all_effec
                                  'NTRK1':ntrk1_KO,'FLT3':flt3_KO,
                                  'CDK1':cdk1_KO,'CDK2':cdk2_KO,
                                  'CDK1+EGFR':egfr_cdk2,'CDK1+FLT3':flt3_cdk2})
-insilico_results.to_csv('../results/ExperimentalValidation/inSilicoKOs_minus10.csv')
+insilico_results.to_csv('../results/ExperimentalValidation/inSilicoKOs_minus100.csv')
 #%%
 # Perform the same analysis but using the reduced network
 NetworkPandas = pd.read_csv(ensembles_path+'MoA/'+drug_name+'_any/'+cell+'_'+drug_name+'_'+TF_gene+'_moa_model_ensembleFiltered.csv',index_col=0)
@@ -283,14 +283,14 @@ for i in range(numberOfModels):
     # node KO only
     # CDK1 KOs
     Xin_ko = torch.zeros(1,Xin.shape[1])
-    Xin_ko[:,node_ind[0]] = -100
+    Xin_ko[:,node_ind[0]] = -10
     fullX_ko = model.inputLayer(Xin_ko)
     YhatFull_masked = model.network(fullX_ko)
     Yhat_ko = model.projectionLayer(YhatFull_masked)
     cdk1_KO.append(Yhat_ko[:,TF_ind].item())
     # CDK2 KOs
     Xin_ko = torch.zeros(1,Xin.shape[1])
-    Xin_ko[:,node_ind[1]] = -100
+    Xin_ko[:,node_ind[1]] = -10
     fullX_ko = model.inputLayer(Xin_ko)
     YhatFull_masked = model.network(fullX_ko)
     Yhat_ko = model.projectionLayer(YhatFull_masked)
@@ -299,28 +299,28 @@ for i in range(numberOfModels):
     # # target KO only
     # # ADRB1 KOs
     # Xin_ko = torch.zeros(1,Xin.shape[1])
-    # Xin_ko[:,target_ind[0]] = -100
+    # Xin_ko[:,target_ind[0]] = -10
     # fullX_ko = model.inputLayer(Xin_ko)
     # YhatFull_masked = model.network(fullX_ko)
     # Yhat_ko = model.projectionLayer(YhatFull_masked)
     # adrb1_KO.append(Yhat_ko[:,TF_ind].item())
     # # EGFR KOs
     # Xin_ko = torch.zeros(1,Xin.shape[1])
-    # Xin_ko[:,target_ind[1]] = -100
+    # Xin_ko[:,target_ind[1]] = -10
     # fullX_ko = model.inputLayer(Xin_ko)
     # YhatFull_masked = model.network(fullX_ko)
     # Yhat_ko = model.projectionLayer(YhatFull_masked)
     # egfr_KO.append(Yhat_ko[:,TF_ind].item())
     # # NTRK1 KOs
     # Xin_ko = torch.zeros(1,Xin.shape[1])
-    # Xin_ko[:,target_ind[2]] = -100
+    # Xin_ko[:,target_ind[2]] = -10
     # fullX_ko = model.inputLayer(Xin_ko)
     # YhatFull_masked = model.network(fullX_ko)
     # Yhat_ko = model.projectionLayer(YhatFull_masked)
     # ntrk1_KO.append(Yhat_ko[:,TF_ind].item())
     # # FLT3 KOs
     # Xin_ko = torch.zeros(1,Xin.shape[1])
-    # Xin_ko[:,target_ind[3]] = -100
+    # Xin_ko[:,target_ind[3]] = -10
     # fullX_ko = model.inputLayer(Xin_ko)
     # YhatFull_masked = model.network(fullX_ko)
     # Yhat_ko = model.projectionLayer(YhatFull_masked)
@@ -329,16 +329,16 @@ for i in range(numberOfModels):
     # combinations KOs
     # CDK1+FLT3 KOs
     Xin_ko = torch.zeros(1,Xin.shape[1])
-    Xin_ko[:,target_ind[3]] = -100
-    Xin_ko[:,node_ind[0]] = -100
+    Xin_ko[:,target_ind[3]] = -10
+    Xin_ko[:,node_ind[0]] = -10
     fullX_ko = model.inputLayer(Xin_ko)
     YhatFull_masked = model.network(fullX_ko)
     Yhat_ko = model.projectionLayer(YhatFull_masked)
     flt3_cdk2.append(Yhat_ko[:,TF_ind].item())
     # CDK1+EGFR KOs
     Xin_ko = torch.zeros(1,Xin.shape[1])
-    Xin_ko[:,target_ind[1]] = -100
-    Xin_ko[:,node_ind[0]] = -100
+    Xin_ko[:,target_ind[1]] = -10
+    Xin_ko[:,node_ind[0]] = -10
     fullX_ko = model.inputLayer(Xin_ko)
     YhatFull_masked = model.network(fullX_ko)
     Yhat_ko = model.projectionLayer(YhatFull_masked)
@@ -355,11 +355,11 @@ for i in range(numberOfModels):
     
 insilico_results = pd.DataFrame({'DMSO':dmso_simulation,'lestaurtinib':all_effects,
                                  'on-target':on_target,'off-target':off_target,
-                                 'ADRB1':adrb1_KO,'EGFR':egfr_KO,
-                                 'NTRK1':ntrk1_KO,'FLT3':flt3_KO,
+                                 # 'ADRB1':adrb1_KO,'EGFR':egfr_KO,
+                                 # 'NTRK1':ntrk1_KO,'FLT3':flt3_KO,
                                  'CDK1':cdk1_KO,'CDK2':cdk2_KO,
                                  'CDK1+EGFR':egfr_cdk2,'CDK1+FLT3':flt3_cdk2})
-insilico_results.to_csv('../results/ExperimentalValidation/reduced_inSilicoKOs_minus100.csv')
+insilico_results.to_csv('../results/ExperimentalValidation/reduced_inSilicoKOs_minus10.csv')
 
 #%% Get KO level sensitivity analysis
 levels = [0,1,3,5,15,10,25,40,50,60,75,100,150,200]
@@ -397,9 +397,9 @@ for lvl in levels:
         model.eval()
         Yhat, YhatFull = model(X)
         mask = torch.mm(1.0*(X!=0).double(),model.drugLayer.mask.T)
-        
+
         Xin = model.drugLayer(X)
-        
+
         # node KO only
         # CDK1 KOs
         node_ind_ko = np.where(np.array(nodesNameGene)=='CDK1')[0][0]
@@ -419,7 +419,7 @@ for lvl in levels:
         Yhat_ko = model.projectionLayer(YhatFull_masked)
         cdk2_KO.append(Yhat_ko[:,TF_ind].item())
         cdk2_node.append(YhatFull_masked[:,node_ind_ko].item())
-        
+
         # target KO only
         # ADRB1 KOs
         node_ind_ko = np.where(np.array(nodesNameGene)=='ADRB1')[0][0]
@@ -457,8 +457,8 @@ for lvl in levels:
         Yhat_ko = model.projectionLayer(YhatFull_masked)
         flt3_KO.append(Yhat_ko[:,TF_ind].item())
         flt3_node.append(YhatFull_masked[:,node_ind_ko].item())
-        
-        
+
+
         # if i % 5 == 0:
         #     print2log('Finished model %s'%i)
 
@@ -472,7 +472,7 @@ for lvl in levels:
                                      'level':np.repeat(lvl,len(cdk1_KO))})
     insilico_results_all = insilico_results_all.append(insilico_results)
     insilico_node_ko_all = insilico_node_ko_all.append(insilico_node_ko)
-    
+
 # Save results
 insilico_results_all.to_csv('../results/ExperimentalValidation/inSilicoKOs_dose_response.csv')
 insilico_node_ko_all.to_csv('../results/ExperimentalValidation/inSilicoKOs_node_response.csv')
