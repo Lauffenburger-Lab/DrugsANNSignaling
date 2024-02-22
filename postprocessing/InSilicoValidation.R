@@ -344,26 +344,17 @@ ggsave('../figures/figure4B.eps',
 
 # Interesting resutls to do some in-silico network simulations----------------------------------------------------
 # Load the simulated in-silico perturbations
-insilico_perturbations <- data.table::fread('../results/ExperimentalValidation/reduced_inSilicoKOs_minus10.csv')
+insilico_perturbations <- data.table::fread('../results/ExperimentalValidation/inSilicoKOs_minus10.csv')
 colnames(insilico_perturbations)[1] <- 'model'
 insilico_perturbations <- insilico_perturbations %>% gather('perturbation','FOXM1 activity',-model)
 insilico_perturbations <- insilico_perturbations %>% 
   filter(perturbation %in% c('EGFR','NTRK1','FLT3','ADRB1','CDK1','CDK2','lestaurtinib','DMSO'))
 
-# run the lines bellow only when using the reduced net
-insilico_perturbations <- insilico_perturbations %>%
-  mutate(`FOXM1 activity`=ifelse(perturbation %in% c('EGFR','NTRK1','FLT3','ADRB1',
-                                                     'CDK1+EGFR','CDK1+NTRK1','CDK1+FLT3','CDK1+ADRB1'),
-                                 NA,`FOXM1 activity`))
-if (!('ADRB1' %in% unique(insilico_perturbations$perturbation))){
-  tmp <-  rbind(data.frame(model=seq(0,49),perturbation = rep('ADRB1',50),`FOXM1 activity`=rep(NA,50)),
-                 data.frame(model=seq(0,49),perturbation = rep('NTRK1',50),`FOXM1 activity`=rep(NA,50)),
-                 data.frame(model=seq(0,49),perturbation = rep('FLT3',50),`FOXM1 activity`=rep(NA,50)),
-                 data.frame(model=seq(0,49),perturbation = rep('ADRB1',50),`FOXM1 activity`=rep(NA,50)))
-  colnames(tmp)[3] <- 'FOXM1 activity'
-  insilico_perturbations <- rbind(insilico_perturbations,
-                                  tmp)
-}
+# # run the line bellow only when using the reduced net
+# insilico_perturbations <- insilico_perturbations %>%
+#   mutate(`FOXM1 activity`=ifelse(perturbation %in% c('EGFR','NTRK1','FLT3','ADRB1',
+#                                                      'CDK1+EGFR','CDK1+NTRK1','CDK1+FLT3','CDK1+ADRB1'),
+#                                  NA,`FOXM1 activity`))
 
 stats.tests = insilico_perturbations %>% filter(!is.na(`FOXM1 activity`)) %>%
   rstatix::wilcox_test(`FOXM1 activity` ~ perturbation) %>% 
@@ -385,31 +376,30 @@ mu_dmso <- median(mu_dmso$`FOXM1 activity`)
 mu_lestaurtinib <- insilico_perturbations %>% filter(perturbation=='lestaurtinib')
 mu_lestaurtinib <- median(mu_lestaurtinib$`FOXM1 activity`)
 
-#THIS IS ALSO FOR THE REDUCED SUBNETWORK
-ggboxplot(insilico_perturbations,
-          x='perturbation',y='FOXM1 activity',
-          color='perturbation',
-          add='jitter') +
-  annotate('text',x=c(3,4,5,6),y=0.2,label='N/A')+
-  scale_color_manual(values = c("black","#E76BF3FF",
-                                "#FF62BCFF","#DE8C00",
-                                'black', 'black',
-                                "#F8766D", 'black',
-                                "#7CAE00","#B79F00"))+
-  #geom_hline(yintercept = 0.5,linetype='dashed',color='black',linewidth=1) +
-  geom_hline(yintercept = mu_dmso,linetype='dashed',color="#DE8C00",linewidth=1) +
-  annotate('text',x=3.5,y=0.6,label='DMSO-induced median activity',color="#DE8C00",size=6)+
-  geom_hline(yintercept = mu_lestaurtinib,linetype='dashed',color="#F8766D",linewidth=1) +
-  annotate('text',x=3.5,y=0.37,label='Lestaurtinib-induced median activity',color="#F8766D",size=6)+
-  theme(text=element_text(size=24),
-        axis.text.x = element_text(angle = 0),
-        legend.position = 'none')+
-  stat_pvalue_manual(stats.tests %>% mutate(x_position = ifelse(group1=='lestaurtinib',group2,group1)) %>%
-                       filter(group1=='lestaurtinib' | group2=='lestaurtinib'),
-                     label = "{p.adj.signif}",
-                     x = "x_position",
-                     y.position = 0.85,
-                     size = 10)
+# #THIS IS ALSO FOR THE REDUCED SUBNETWORK
+# ggboxplot(insilico_perturbations,
+#           x='perturbation',y='FOXM1 activity',
+#           color='perturbation',
+#           add='jitter') +
+#   annotate('text',x=c(3,4,5,6),y=0.2,label='N/A')+
+#   scale_color_manual(values = c("#F8766D","#DE8C00",
+#                                 '#E76BF3FF', '#FF62BCFF',
+#                                 'black', 'black',
+#                                 "black", "black"))+
+#   #geom_hline(yintercept = 0.5,linetype='dashed',color='black',linewidth=1) +
+#   geom_hline(yintercept = mu_dmso,linetype='dashed',color="#DE8C00",linewidth=1) +
+#   annotate('text',x=3.5,y=0.6,label='DMSO-induced median activity',color="#DE8C00",size=6)+
+#   geom_hline(yintercept = mu_lestaurtinib,linetype='dashed',color="#F8766D",linewidth=1) +
+#   annotate('text',x=3.5,y=0.37,label='Lestaurtinib-induced median activity',color="#F8766D",size=6)+
+#   theme(text=element_text(size=24),
+#         axis.text.x = element_text(angle = 0),
+#         legend.position = 'none')+
+#   stat_pvalue_manual(stats.tests %>% mutate(x_position = ifelse(group1=='lestaurtinib',group2,group1)) %>%
+#                        filter(group1=='lestaurtinib' | group2=='lestaurtinib'),
+#                      label = "{p.adj.signif}",
+#                      x = "x_position",
+#                      y.position = 0.85,
+#                      size = 10)
 
 ## Comment this if you are analyzing the reuced subnetwork
 ggboxplot(insilico_perturbations %>% filter(!grepl('-target',perturbation)),

@@ -21,8 +21,10 @@ def getZeroBiasIndices(node_dictionary,Nodes2Keep):
 
 def getZeroWeightsIndices(A,Edges2Keep):
     edges_inds = []
+    #A = A.T # remember it is flipped in LEMBAS
     nonzero_indices = np.array(A.nonzero())
-    for index, (source, target) in enumerate(zip(*nonzero_indices)):
+    # for index, (source, target) in enumerate(zip(*nonzero_indices)):
+    for index, (target, source) in enumerate(zip(*nonzero_indices)):# remember it is flipped in LEMBAS
         if (source,target) not in Edges2Keep:
             edges_inds.append(index)
     return(np.array(edges_inds))
@@ -59,7 +61,7 @@ targets_name = ['ADRB1','EGFR','NTRK1','FLT3']
 
 
 ### Load interesting in-silico validations
-experiments = pd.read_csv('../results/ExperimentalValidation/inSilicoValResults.csv',index_col=0)
+#experiments = pd.read_csv('../results/ExperimentalValidation/inSilicoValResults.csv',index_col=0)
 
 #%%
 
@@ -222,13 +224,16 @@ insilico_results = pd.DataFrame({'DMSO':dmso_simulation,'lestaurtinib':all_effec
                                  'NTRK1':ntrk1_KO,'FLT3':flt3_KO,
                                  'CDK1':cdk1_KO,'CDK2':cdk2_KO,
                                  'CDK1+EGFR':egfr_cdk2,'CDK1+FLT3':flt3_cdk2})
-insilico_results.to_csv('../results/ExperimentalValidation/inSilicoKOs_minus100.csv')
+insilico_results.to_csv('../results/ExperimentalValidation/inSilicoKOs_minus10.csv')
 #%%
 # Perform the same analysis but using the reduced network
 NetworkPandas = pd.read_csv(ensembles_path+'MoA/'+drug_name+'_any/'+cell+'_'+drug_name+'_'+TF_gene+'_moa_model_ensembleFiltered.csv',index_col=0)
 trimmed_nodes = np.union1d(NetworkPandas.source.values,NetworkPandas.target.values)
 trimmed_edges = []
+c = 0
 for i in range(len(NetworkPandas)):
+    if ((NetworkPandas.source[i],NetworkPandas.target[i]) in trimmed_edges):
+        c +=1
     trimmed_edges.append((NetworkPandas.source[i],NetworkPandas.target[i]))
 dmso_ind = np.where(drugInput.columns.values=='CS(C)=O')[0][0]
 X = torch.tensor(drugInput.loc[sample,:].values.copy(), dtype=torch.double)
@@ -296,35 +301,35 @@ for i in range(numberOfModels):
     Yhat_ko = model.projectionLayer(YhatFull_masked)
     cdk2_KO.append(Yhat_ko[:,TF_ind].item())
     
-    # # target KO only
-    # # ADRB1 KOs
-    # Xin_ko = torch.zeros(1,Xin.shape[1])
-    # Xin_ko[:,target_ind[0]] = -10
-    # fullX_ko = model.inputLayer(Xin_ko)
-    # YhatFull_masked = model.network(fullX_ko)
-    # Yhat_ko = model.projectionLayer(YhatFull_masked)
-    # adrb1_KO.append(Yhat_ko[:,TF_ind].item())
-    # # EGFR KOs
-    # Xin_ko = torch.zeros(1,Xin.shape[1])
-    # Xin_ko[:,target_ind[1]] = -10
-    # fullX_ko = model.inputLayer(Xin_ko)
-    # YhatFull_masked = model.network(fullX_ko)
-    # Yhat_ko = model.projectionLayer(YhatFull_masked)
-    # egfr_KO.append(Yhat_ko[:,TF_ind].item())
-    # # NTRK1 KOs
-    # Xin_ko = torch.zeros(1,Xin.shape[1])
-    # Xin_ko[:,target_ind[2]] = -10
-    # fullX_ko = model.inputLayer(Xin_ko)
-    # YhatFull_masked = model.network(fullX_ko)
-    # Yhat_ko = model.projectionLayer(YhatFull_masked)
-    # ntrk1_KO.append(Yhat_ko[:,TF_ind].item())
-    # # FLT3 KOs
-    # Xin_ko = torch.zeros(1,Xin.shape[1])
-    # Xin_ko[:,target_ind[3]] = -10
-    # fullX_ko = model.inputLayer(Xin_ko)
-    # YhatFull_masked = model.network(fullX_ko)
-    # Yhat_ko = model.projectionLayer(YhatFull_masked)
-    # flt3_KO.append(Yhat_ko[:,TF_ind].item())
+    # target KO only
+    # ADRB1 KOs
+    Xin_ko = torch.zeros(1,Xin.shape[1])
+    Xin_ko[:,target_ind[0]] = -10
+    fullX_ko = model.inputLayer(Xin_ko)
+    YhatFull_masked = model.network(fullX_ko)
+    Yhat_ko = model.projectionLayer(YhatFull_masked)
+    adrb1_KO.append(Yhat_ko[:,TF_ind].item())
+    # EGFR KOs
+    Xin_ko = torch.zeros(1,Xin.shape[1])
+    Xin_ko[:,target_ind[1]] = -10
+    fullX_ko = model.inputLayer(Xin_ko)
+    YhatFull_masked = model.network(fullX_ko)
+    Yhat_ko = model.projectionLayer(YhatFull_masked)
+    egfr_KO.append(Yhat_ko[:,TF_ind].item())
+    # NTRK1 KOs
+    Xin_ko = torch.zeros(1,Xin.shape[1])
+    Xin_ko[:,target_ind[2]] = -10
+    fullX_ko = model.inputLayer(Xin_ko)
+    YhatFull_masked = model.network(fullX_ko)
+    Yhat_ko = model.projectionLayer(YhatFull_masked)
+    ntrk1_KO.append(Yhat_ko[:,TF_ind].item())
+    # FLT3 KOs
+    Xin_ko = torch.zeros(1,Xin.shape[1])
+    Xin_ko[:,target_ind[3]] = -10
+    fullX_ko = model.inputLayer(Xin_ko)
+    YhatFull_masked = model.network(fullX_ko)
+    Yhat_ko = model.projectionLayer(YhatFull_masked)
+    flt3_KO.append(Yhat_ko[:,TF_ind].item())
     
     # combinations KOs
     # CDK1+FLT3 KOs
@@ -355,8 +360,8 @@ for i in range(numberOfModels):
     
 insilico_results = pd.DataFrame({'DMSO':dmso_simulation,'lestaurtinib':all_effects,
                                  'on-target':on_target,'off-target':off_target,
-                                 # 'ADRB1':adrb1_KO,'EGFR':egfr_KO,
-                                 # 'NTRK1':ntrk1_KO,'FLT3':flt3_KO,
+                                 'ADRB1':adrb1_KO,'EGFR':egfr_KO,
+                                 'NTRK1':ntrk1_KO,'FLT3':flt3_KO,
                                  'CDK1':cdk1_KO,'CDK2':cdk2_KO,
                                  'CDK1+EGFR':egfr_cdk2,'CDK1+FLT3':flt3_cdk2})
 insilico_results.to_csv('../results/ExperimentalValidation/reduced_inSilicoKOs_minus10.csv')
