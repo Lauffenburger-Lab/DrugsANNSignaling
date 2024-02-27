@@ -65,7 +65,7 @@ data_replicates <- left_join(data_replicates,as.data.frame(TF_activities) %>% ro
 # Filter high variance TFs
 TFs_vars <- aggregate(data_replicates[,3:ncol(data_replicates)],by=list(data_replicates$sig_id),FUN=var)
 ### Perform random permutations per TF and 
-# determine with an F-test if the distribution of random variances is different
+# determine with a KS-test if the distribution of random variances is different
 randomVariance <- function(data,ind){
   RandomVar <- aggregate(data[sample(1:nrow(data)),2+ind],
                          by=list(data$sig_id),
@@ -91,7 +91,7 @@ ks_tests <- NULL
 difference_means <- NULL
 k <- 1
 for (j in 1:ncol(TFs_random_all)){
-  test <- ks.test(TFs_vars[,j+1],TFs_random_all[,j],alternative = "g") # test if sds are stochastically less than random
+  test <- ks.test(TFs_vars[,j+1],TFs_random_all[,j],alternative = "g") # test if vars are stochastically less than random
   ks_tests[[j]] <- test 
   difference_means[j] <- mean(TFs_vars[,j+1])- mean(TFs_random_all[,j])
   if (test$p.value>0.05){
