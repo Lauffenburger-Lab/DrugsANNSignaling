@@ -1,4 +1,4 @@
-## Algorithms for the pre-processing of the raw data
+## Algorithms for the pre-processing of the raw data (specialized for the L1000 dataset)
 1. retrieveDrugTargetInfo.R: Script to retrieve drug-target interactions, merge with the L1000 dataset, and retrieve also level-3 gene expression data.
 2. drug_sigs_for_cell.R: Script with function to retrieve samples metadat and adds quality score to each signature and for each drug/cell line combination selects the signature with the highest quality.
 3. inferTFactivity.R: Script to infer TF activity and pre-process to remove samples and TFs of bad quality.
@@ -7,6 +7,8 @@
 6. extractPKN.py: Script to extract prior knowledge network (PKN) of protein-protein interactions.
 7. trimPKN.py: Script to trim the prior knowledge network (PKN).
 
+## Scripts to be used (**with appropriate input arguments**) in a user case study:
+1. inferOffTargetEffectDeltaCaseStudy.py: Run this to infer TF activity for some samples and pre-process to remove samples and TFs of bad quality for your own case study.
 
 ## Folder structure
 1. preprocessed_data: It contains the pre-processed data from the above scripts to be used later for training models and other downstream analyses of the study.

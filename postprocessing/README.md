@@ -4,7 +4,12 @@ This folder contains code for analyzing models' results and producing some of th
 This folder does not contain code regarding inferring the network describing the MoA of a frug due to off-target effects (scripts can be found in the MoA folder).
 While it contains some Python scripts for inferring dug-target interactions the rest can be found again in the MoA folder.
 
-Scripts list:
+### Scripts to be used (**with appropriate input arguments**) in a user case study:
+** Run these after having trained models and have evaluated their performance with the scripts in the learining folder**
+1. inferOffTargetEffectDeltaCaseStudy.py: First run this script to estimate ΔTF when masking known drug-target interactions, as a proxy of the off-target effect of a drug on TFs' activities.
+2. chooseTFsWithOffTargetsCaseStudy.R: Then run this to select TFs that are well-fitted and samples where a drug seems to have a large off-target effect according to the models. 
+
+### Scripts used in the original [manuscript](https://doi.org/10.1016/j.isci.2024.109509):
 1. EstimateRequiredEnsembles.R: Script containing code to analyze how the performance of the model changes with an increasing number of ensembles. (produces figures to estimate the number of ensembles VS performance)
 2. EnsembleEval.R: Script containing code to evaluate ensembles of models and compare their performance with that of individual models (produces supplementary figures 1,5)
 3. CompareResultsVanillasEnsembles.R: Script containing code to compare our model with other machine learning approaches and generally analyze its performance (produces figures 1B-1C)

@@ -10,8 +10,6 @@ from pathlib import Path
 from operator import itemgetter
 import time
 from matplotlib import pyplot as plt
-import seaborn as sns
-sns.set()
 start_time = time.time()
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -83,63 +81,82 @@ def pathFinder(source,target,network,mode='Shortest',max_depth = 5):
     return paths
 
 parser = argparse.ArgumentParser(prog='Infer MoA')
-parser.add_argument('--ensembles_path', action='store', default="../results/A375_ensembles/")
-parser.add_argument('--inputPattern', action='store', default="l1000_latest_model_modeltype4_model")
-parser.add_argument('--cell_line', action='store', default="A375")
+parser.add_argument('--inputPattern', action='store', default='l1000_latest_model_modeltype4_a375_case_study')
+parser.add_argument('--ensembles_path', action='store', default='../../results/case_study/')
+parser.add_argument('--DrugsIn', action='store', default='../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_A375-conditions_drugs.tsv')
+parser.add_argument('--TargetsIn', action='store', default='../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-drugs_targets_A375.tsv')
+parser.add_argument('--TFsOut', action='store', default='../preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv')
+parser.add_argument('--ChemicalSims', action='store', default='../preprocessing/preprocessed_data/ChemicalSims/lvl3_similarities_A375.csv')
+parser.add_argument('--PKN', action='store', default='../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Model.tsv')
+parser.add_argument('--PknAnnotation', action='store', default='../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Annotation.tsv')
+parser.add_argument('--res_dir', action='store', default='../../results/case_study/')
+parser.add_argument('--interactionScorePattern', action='store', default='interactionScores')
 parser.add_argument('--numberOfModels', action='store', default=50)
 parser.add_argument('--ConvertToEmpProb', action='store',default=False)
+parser.add_argument('--source_freq_thresh', action='store', default=0.6)
+parser.add_argument('--edge_thresh_init', action='store', default=0.5)
+## Define case study parameters
+parser.add_argument('--moa_off_target', action='store',default='any')
+parser.add_argument('--cell_line', action='store',default='A375')
+parser.add_argument('--TF', action='store',default='Q08050')
+parser.add_argument('--TF_gene', action='store',default='FOXM1')
+parser.add_argument('--drug', action='store',default='C[C@]12O[C@H](C[C@]1(O)CO)n1c3ccccc3c3c4C(=O)NCc4c4c5ccccc5n2c4c13')
+parser.add_argument('--drug_name', action='store',default='lestaurtinib')
+parser.add_argument('--sample', action='store',default='CPC014_A375_6H:BRD-K23192422-001-01-1:10')
+
 args = parser.parse_args()
-ensembles_path = args.ensembles_path
-cell = args.cell_line
 numberOfModels = int(args.numberOfModels)
+source_freq_thresh = args.source_freq_thresh
+edge_thresh_init = args.edge_thresh_init
 ConvertToEmpProb = args.ConvertToEmpProb
 if type(ConvertToEmpProb) == str :
     ConvertToEmpProb = eval(ConvertToEmpProb)
+ensembles_path = args.ensembles_path
 inputPattern = args.inputPattern
-inputPattern = cell + "_" + inputPattern
-inputPath = ensembles_path + 'models/'+ inputPattern
+DrugsIn = args.DrugsIn
+TargetsIn = args.TargetsIn
+TFsOut = args.TFsOut
+ChemicalSims = args.ChemicalSims
+PknAnnotation = args.PknAnnotation
+PKN = args.PKN
+res_dir = args.res_dir
+interactionScorePattern = args.interactionScorePattern
+inputPath = ensembles_path + 'models/' + inputPattern
+cell = args.cell_line
 
 ### Choose TF and drug to investigate
 # interestingSamples = pd.read_csv(ensembles_path+'interestingSamples.csv',index_col=1)
-TF = "Q08050"
-TF_gene = "FOXM1"
-drug = "C[C@]12O[C@H](C[C@]1(O)CO)n1c3ccccc3c3c4C(=O)NCc4c4c5ccccc5n2c4c13"
-drug_name = "lestaurtinib"
-sample = "CPC014_A375_6H:BRD-K23192422-001-01-1:10"
-moa_off_target = 'any'
+TF = args.TF
+TF_gene = args.TF_gene
+drug = args.drug
+drug_name = args.drug_name
+sample = args.sample
+moa_off_target = args.moa_off_target
 #'inhibit'
 
 # deltaTF = interestingSamples.loc[sample,"delta"]
 
 # Make drug directory
-Path(ensembles_path+'MoA/'+drug_name).mkdir(parents=True, exist_ok=True)
-Path(ensembles_path + 'InteractionScores/MergedInteractions/'+drug_name).mkdir(parents=True, exist_ok=True)
+Path(res_dir+'MoA/'+drug_name).mkdir(parents=True, exist_ok=True)
+Path(res_dir + 'InteractionScores/MergedInteractions/'+drug_name).mkdir(parents=True, exist_ok=True)
 
 #%%
-### Get drug-target interactions
-# merged_interaction = pd.read_csv(ensembles_path+'InteractionScores/l1000_modeltype4_lamda6_'+cell+'_mergedInteractions_ROC.csv',index_col=0)
-# merged_interaction = merged_interaction[merged_interaction['drug']==drug]
-# merged_interaction = merged_interaction[merged_interaction['Inferred']=='Interaction']
-
 ### Load network
 #Load network
-networkList, nodeNames, modeOfAction = bionetwork.loadNetwork('../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Model.tsv')
+networkList, nodeNames, modeOfAction = bionetwork.loadNetwork(PKN)
 #### BE CAREFUL!!!!
 #### In networkList the sources and edges are flipped !!!
 #### So flip them again here!
 networkList = networkList[[1,0],:] # now : 1st row == sources , 2nd row == targets
-annotation = pd.read_csv('../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Annotation.tsv', sep='\t')
+annotation = pd.read_csv(PknAnnotation, sep='\t')
 uniprot2gene = dict(zip(annotation['code'], annotation['name']))
-bionetParams = bionetwork.trainingParameters(iterations = 120, clipping=1, targetPrecision=1e-6, leak=0.01) # for A549 was 120
+bionetParams = bionetwork.trainingParameters(iterations = 120, clipping=1, targetPrecision=1e-6, leak=0.01) # for a375 was 120
 spectralCapacity = np.exp(np.log(1e-2)/bionetParams['iterations'])
 ### Load the data
-drugInput = pd.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-conditions_drugs.tsv', sep='\t', low_memory=False, index_col=0)
+drugInput = pd.read_csv(DrugsIn, sep='\t', low_memory=False, index_col=0)
 drugSmiles = drugInput.columns.values
-drugTargets = pd.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-drugs_targets.tsv', sep='\t', low_memory=False, index_col=0)
-TFOutput = pd.read_csv('../preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv', sep='\t', low_memory=False, index_col=0)
-cellInput = pd.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3-conditions_cells.tsv', sep='\t', low_memory=False, index_col=0)
-TFOutput=TFOutput.loc[cellInput[cellInput[cell]==1].index,:]
-drugInput=drugInput.loc[cellInput[cellInput[cell]==1].index,:]
+drugTargets = pd.read_csv(TargetsIn, sep='\t', low_memory=False, index_col=0)
+TFOutput = pd.read_csv(TFsOut, sep='\t', low_memory=False, index_col=0)
 #Subset input and output to intersecting nodes
 druginName = drugInput.columns.values
 inName = drugTargets.columns.values
@@ -156,12 +173,10 @@ if ConvertToEmpProb==True:
     TFOutput = 1/(1+np.exp(-TFOutput))
 #make sure they are on the same order
 drugTargets = drugTargets.loc[drugInput.columns.values,:]
-drugSim = pd.read_csv('../preprocessing/preprocessed_data/ChemicalSims/out_lvl3_similaritiess.csv',index_col=0)
+drugSim = pd.read_csv(ChemicalSims,index_col=0)
 drugSim = drugSim.loc[drugInput.columns.values,drugInput.columns.values]
 drugSim = torch.tensor(drugSim.values.copy(), dtype=torch.double)
 
-# Χ_all = torch.tensor(drugInput.values.copy(), dtype=torch.double)
-# Y_all = torch.tensor(TFOutput.values, dtype=torch.double)
 # Keep only drug/sample of interest
 TF_ind = np.where(TFOutput.columns==TF)[0]
 sample_ind = np.where(TFOutput.index==sample)[0]
@@ -210,7 +225,9 @@ all_sources = pd.DataFrame({'sources':[],'model':[]})
 df_all_source_types = pd.DataFrame({'type':[],'name':[]})
 df_all_target_types = pd.DataFrame({'type':[],'name':[]})
 mean_bias = np.zeros((len(nodeNames)))
+models_times = []
 for i in range(numberOfModels):#range(1):
+    prev_time = time.time()
     model = torch.load(inputPath+str(i)+".pt")
     resetGradients(model)
     model.eval()
@@ -238,7 +255,7 @@ for i in range(numberOfModels):#range(1):
     
 
     ### Get drug-target interactions
-    interactions = pd.read_csv(ensembles_path + 'InteractionScores/l1000_modeltype4_lamda6_' + cell + '_interactionScores_%s.csv' % i,index_col=0)
+    interactions = pd.read_csv(ensembles_path + 'InteractionScores/'+interactionScorePattern+'_%s.csv' % i,index_col=0)
     # drugs = interactions.index.values
     # target_space = interactions.columns.values
     # interactions = torch.tensor(interactions.values) * Xin_range
@@ -250,7 +267,7 @@ for i in range(numberOfModels):#range(1):
     merged_interactions = inferDrugTarget(interactions,global_grad_scores,
                                           model.drugLayer.mask.T.detach(), drugInput,drugTargets,
                                           i,
-                                          ensembles_path + 'InteractionScores/MergedInteractions/'+drug_name+'/'+'l1000_modeltype4_lamda6_' + cell+'_'+drug_name+"_sample_ind"+str(sample_ind[0]))
+                                          res_dir + 'InteractionScores/MergedInteractions/'+drug_name+'/'+inputPattern +'_'+drug_name+"_sample_ind"+str(sample_ind[0]))
     drug_target_nodes = merged_interactions[merged_interactions['drug'] == drug]
     drug_target_nodes = drug_target_nodes[drug_target_nodes['Inferred'] == 'Interaction']
     drug_target_nodes = drug_target_nodes.variable.unique()
@@ -507,7 +524,7 @@ for i in range(numberOfModels):#range(1):
     sign = lambda a: '-' if (a<0) else '+'
     NetworkPandas['interaction'] = [sign(w) for w in NetworkPandas["weight"].values]
     # NetworkPandas['interaction'] = np.sign(NetworkPandas["weight"])
-    NetworkPandas.to_csv(ensembles_path+'MoA/'+drug_name+'/'+cell+'_'+drug_name+'_'+TF_gene+'_moa_model_%s.csv'%i)
+    NetworkPandas.to_csv(res_dir+'MoA/'+drug_name+'/'+cell+'_'+drug_name+'_'+TF_gene+'_moa_model_%s.csv'%i)
     NetworkPandas['model_no'] = i
     node_type = []
     nodes_all = list(SignalingNet.nodes())
@@ -521,7 +538,7 @@ for i in range(numberOfModels):#range(1):
     df_node_types = pd.DataFrame({'id':nodes_all,'type':node_type})
     df_node_types = df_node_types.merge(df_map, on='id', how='left')
     df_node_types = df_node_types.drop(['id'],axis=1)
-    df_node_types.to_csv(ensembles_path+'MoA/'+drug_name+'/'+cell+'_'+drug_name+'_'+TF_gene+'_node_types_%s.csv'%i)
+    df_node_types.to_csv(res_dir+'MoA/'+drug_name+'/'+cell+'_'+drug_name+'_'+TF_gene+'_node_types_%s.csv'%i)
     
     if (i==0):
         df_all = NetworkPandas.copy()
@@ -553,21 +570,28 @@ for i in range(numberOfModels):#range(1):
     NetworkPandas = NetworkPandas.merge(df_map.rename({'id': 'target'}, axis=1), on='target', how='left')
     NetworkPandas = NetworkPandas.rename({'name': 'name_target'}, axis=1)
     NetworkPandas['interaction'] = [sign(w) for w in NetworkPandas["weight"].values]
-    NetworkPandas.to_csv(ensembles_path + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_short_model_%s.csv' % i)
+    NetworkPandas.to_csv(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_short_model_%s.csv' % i)
 
     print2log('Connected %s' %nx.is_connected(SignalingNet.to_undirected()))
     print2log('Unique nodes %s'%len(SignalingNet.nodes()))
     print2log('Unique edges %s' % len(SignalingNet.edges()))
     print2log('Finished MoA for model %s'%i)
+    models_times.append(time.time() - prev_time)
 
-df_all.to_csv(ensembles_path + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_all_models.csv')
+df_all.to_csv(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_all_models.csv')
 mean_bias = mean_bias/numberOfModels
+avg_time = np.mean(models_times)/60
+print2log('Average time per model = %s minutes'%avg_time)
+runtime_1 = (time.time() - start_time)/60
+print2log('Total 1st step time = %s minutes'%runtime_1)
 #%%
-#df_all = pd.read_csv(ensembles_path + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_all_models.csv',index_col=0)
+#df_all = pd.read_csv(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_all_models.csv',index_col=0)
 # Ensemble by model
+start_time = time.time()
+#source_freq_thresh = 0.5
 ensembled = df_all.groupby(['name_source','name_target']).agg(model_counts = pd.NamedAgg(column ='model_no', aggfunc=lambda x: x.nunique()))
 all_sources_counted = all_sources['sources'].value_counts()
-all_sources_counted = all_sources_counted[all_sources_counted>=0.5*numberOfModels]
+all_sources_counted = all_sources_counted[all_sources_counted>=source_freq_thresh*numberOfModels]
 all_sources_counted = all_sources_counted.reset_index()
 all_sources_counted.columns = ['sources','counts']
 df_map = pd.DataFrame(map, index=[0]).T
@@ -586,7 +610,7 @@ df_all = df_all.drop_duplicates()
 ensembled = ensembled.merge(df_all,on=['name_source','name_target'],how='left')
 ensembled['interaction'] = [sign(w) for w in ensembled["weight"].values]
 # ensembled = ensembled[ensembled['model_counts']>=0.3*numberOfModels]
-edge_thresh = 0.5
+edge_thresh = edge_thresh_init
 ensembled_tmp = ensembled[ensembled['model_counts']>=edge_thresh*numberOfModels]
 EnsembledNet = nx.from_pandas_edgelist(ensembled_tmp,source='source', target='target', edge_attr='weight', create_using=nx.DiGraph())
 has_path = []
@@ -772,7 +796,7 @@ NetworkPandas = NetworkPandas.rename({'name': 'name_target'}, axis=1)
 sign = lambda a: '-' if (a<0) else '+'
 NetworkPandas['interaction'] = [sign(w) for w in NetworkPandas["weight"].values]
 NetworkPandas = NetworkPandas.drop_duplicates()
-NetworkPandas.to_csv(ensembles_path+'MoA/'+drug_name+'/'+cell+'_'+drug_name+'_'+TF_gene+'_moa_model_ensembleFiltered.csv')
+NetworkPandas.to_csv(res_dir+'MoA/'+drug_name+'/'+cell+'_'+drug_name+'_'+TF_gene+'_moa_model_ensembleFiltered.csv')
 
 node_type = []
 nodes_all = list(SignalingNet.nodes())
@@ -790,7 +814,7 @@ for node in nodes_all:
         node_type.append('mid_node')
     names.append(node_name)
 df_node_types = pd.DataFrame({'name':names,'type':node_type})
-df_node_types.to_csv(ensembles_path+'MoA/'+drug_name+'/'+cell+'_'+drug_name+'_'+TF_gene+'_node_types_ensembleFiltered.csv')
+df_node_types.to_csv(res_dir+'MoA/'+drug_name+'/'+cell+'_'+drug_name+'_'+TF_gene+'_node_types_ensembleFiltered.csv')
 
 print2log('The whole trimmed network')
 print2log(NetworkPandas)
@@ -809,7 +833,7 @@ NetworkPandas_short = NetworkPandas_short.rename({'name': 'name_target'}, axis=1
 sign = lambda a: '-' if (a<0) else '+'
 NetworkPandas_short['interaction'] = [sign(w) for w in NetworkPandas_short["weight"].values]
 NetworkPandas_short = NetworkPandas_short.drop_duplicates()
-NetworkPandas_short.to_csv(ensembles_path + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_short_model_ensembled.csv')
+NetworkPandas_short.to_csv(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_short_model_ensembled.csv')
 print2log('The shortest path trimmed network')
 print2log(NetworkPandas_short)
 
@@ -833,7 +857,7 @@ NetworkPandas_frequent = NetworkPandas_frequent[NetworkPandas_frequent['path']==
 sign = lambda a: '-' if (a<0) else '+'
 NetworkPandas_frequent['interaction'] = [sign(w) for w in NetworkPandas_frequent["weight"].values]
 NetworkPandas_frequent = NetworkPandas_frequent.drop_duplicates()
-NetworkPandas_frequent.to_csv(ensembles_path + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_frequent_model_ensembled.csv')
+NetworkPandas_frequent.to_csv(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_frequent_model_ensembled.csv')
 print2log('The most frequent trimmed network')
 print2log(NetworkPandas_frequent)
 
@@ -857,7 +881,7 @@ for edge in subnet.edges(data=True):
 # Turn off unnecessary x and y axis labels
 ax.set_axis_off()
 # Save figure with a tight bbox to ensure it isn't cut off
-fig.savefig(ensembles_path + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_frequent_model_ensembled.png', 
+fig.savefig(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_frequent_model_ensembled.png', 
             bbox_inches='tight', dpi=600)
 
 # Plot the most shortest path
@@ -880,7 +904,9 @@ for edge in subnet.edges(data=True):
 # Turn off unnecessary x and y axis labels
 ax.set_axis_off()
 # Save figure with a tight bbox to ensure it isn't cut off
-fig.savefig(ensembles_path + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_short_model_ensembled.png', 
+fig.savefig(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_short_model_ensembled.png', 
             bbox_inches='tight', dpi=600)
 
 print2log(all_sources_counted)
+runtime_2 = (time.time() - start_time)/60.
+print2log('Total 2nd step time = %s minutes'%runtime_2)

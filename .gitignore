@@ -14,6 +14,7 @@ preprocessing/preprocessed_data/TF_activities/Trimmed_l1000_allgenes_lvl3_tfs.ts
 preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv
 preprocessing/preprocessed_data/ChemicalSims/all_total_smiles.csv
 preprocessing/preprocessed_data/ChemicalSims/all_total_similarities.csv
+postprocessing/__pycache__/
 results/viability_data_all.rds
 results/vanilla_ensembles/ANN/models/
 results/vanilla_ensembles/ANN/train/
@@ -111,6 +112,10 @@ results/A549_ensembles/all_merged_interactions_drugs_withsignalRange.csv
 results/A549_ensembles/grads_vs_weights_A549.csv
 results/A549_ensembles/test/*.png
 article_supplementary_info/supple_fig11_prism.png
+article_supplementary_info/grads_vs_weights_vs_weights2.png
+article_supplementary_info/grads_vs_weights_vs_weights2_mined_loged.png
+article_supplementary_info/grads_vs_weights_vs_weights2_minmaxed.png
+article_supplementary_info/grads_vs_weights_vs_weights2_minmaxed_per_model_per_drug.png
 results/A375_ensembles/interestingSamples_sorted_A375.csv
 results/A549_ensembles/interestingSamples_sorted_A549.csv
 results/FinalEnsemble/interestingSamples_sorted_VCAP.csv
@@ -144,6 +149,11 @@ postprocessing/clean_data.R
 figures/figure1B.eps
 figures/figure1C.eps
 figures/figure1D.eps
+figures/figure2A_A375_all.png
+figures/figure3B_allA375.eps
+figures/figure3B_case_study.eps
+learning/__pycache__/
+MoA/__pycache__/
 ShinyAPP
 ShinyAPP/*
 graphical_abstract

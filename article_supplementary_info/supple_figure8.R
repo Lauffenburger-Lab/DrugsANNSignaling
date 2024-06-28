@@ -9,6 +9,10 @@ vcap_scores <- data.table::fread('../results/FinalEnsemble/grads_vs_weights_VCAP
 all_scores <- rbind(a375_scores,a549_scores,vcap_scores)
 all_scores <- all_scores %>% group_by(cell,model_no) %>% 
   mutate(R2=MLmetrics::R2_Score(grad_scores,weight_scores)) %>% ungroup()
+# all_scores <- all_scores %>% group_by(cell,model_no) %>%
+#   mutate(grad_scores=(grad_scores - min(grad_scores))/(max(grad_scores) - min(grad_scores)) ) %>%
+#   mutate(weight_scores=(weight_scores - min(weight_scores))/(max(weight_scores) - min(weight_scores)) ) %>%
+#   ungroup()
 
 # Create plots-------------------
 ggscatter(all_scores,x='grad_scores',y='weight_scores',cor.coef = T,cor.coef.size = 10,

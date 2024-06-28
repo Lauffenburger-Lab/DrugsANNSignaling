@@ -13,19 +13,34 @@ print2log = logger.info
 parser = argparse.ArgumentParser(prog='Drug-Targets for drugs of interest')
 parser.add_argument('--ensembles_path', action='store', default="../results/A375_ensembles/")
 parser.add_argument('--inputPattern', action='store', default="l1000_latest_model_modeltype4_model")
-parser.add_argument('--cell_line', action='store', default="A375")
 parser.add_argument('--numberOfModels', action='store', default=50)
 parser.add_argument('--ConvertToEmpProb', action='store',default=False)
+parser.add_argument('--drugInputFile', action='store',default='../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-conditions_drugs.tsv')
+parser.add_argument('--drugTargetsFile', action='store',default='../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-drugs_targets.tsv')
+parser.add_argument('--TFOutFile', action='store',default='../preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv')
+parser.add_argument('--drugSimilarityFile', action='store',default='../preprocessing/preprocessed_data/ChemicalSims/out_lvl3_similaritiess.csv')
+parser.add_argument('--res_dir', action='store',default=None)
+parser.add_argument('--Y_ALL_path', action='store',default=None)
+parser.add_argument('--Y_ALL_masked_path', action='store',default=None)
+parser.add_argument('--interactionsPath', action='store',default=None)
+parser.add_argument('--error_threshold', action='store',default=0.25)
+
 args = parser.parse_args()
 ensembles_path = args.ensembles_path
-cell = args.cell_line
 numberOfModels = int(args.numberOfModels)
 ConvertToEmpProb = args.ConvertToEmpProb
 if type(ConvertToEmpProb) == str :
     ConvertToEmpProb = eval(ConvertToEmpProb)
 inputPattern = args.inputPattern
-inputPattern = cell + "_" + inputPattern
 inputPath = ensembles_path + inputPattern
+drugInputFile = args.drugInputFile
+drugTargetsFile = args.drugTargetsFile
+TFOutFile = args.TFOutFile
+drugSimilarityFile = args.drugSimilarityFile
+res_dir = args.res_dir
+Y_ALL_masked_path = args.Y_ALL_masked_path
+Y_ALL_path = args.Y_ALL_path
+interactionsPath = args.interactionsPath
 
 def inferDrugTarget(interactions, global_thresholds, prior_mask, drugInput, drugTargets, model_no,
                     grad_thresholds=list(np.logspace(-3.5, 3.5, num=45)), thresh=0.25):
@@ -66,14 +81,12 @@ annotation = pd.read_csv('../preprocessing/preprocessed_data/PKN/l1000_lvl3_with
 uniprot2gene = dict(zip(annotation['code'], annotation['name']))
 bionetParams = bionetwork.trainingParameters(iterations = 120, clipping=1, targetPrecision=1e-6, leak=0.01)
 spectralCapacity = np.exp(np.log(1e-2)/bionetParams['iterations'])
-### Load the data
-drugInput = pd.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-conditions_drugs.tsv', sep='\t', low_memory=False, index_col=0)
+### Load the data 
+drugInput = pd.read_csv(drugInputFile, sep='\t', low_memory=False, index_col=0)
 drugSmiles = drugInput.columns.values
-drugTargets = pd.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-drugs_targets.tsv', sep='\t', low_memory=False, index_col=0)
-TFOutput = pd.read_csv('../preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv', sep='\t', low_memory=False, index_col=0)
-cellInput = pd.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3-conditions_cells.tsv', sep='\t', low_memory=False, index_col=0)
-TFOutput=TFOutput.loc[cellInput[cellInput[cell]==1].index,:]
-drugInput=drugInput.loc[cellInput[cellInput[cell]==1].index,:]
+drugTargets = pd.read_csv(drugTargetsFile, sep='\t', low_memory=False, index_col=0)
+TFOutput = pd.read_csv(TFOutFile, sep='\t', low_memory=False, index_col=0)
+TFOutput=TFOutput.loc[drugInput.index,:]
 #Subset input and output to intersecting nodes
 druginName = drugInput.columns.values
 inName = drugTargets.columns.values
@@ -90,7 +103,7 @@ if ConvertToEmpProb==True:
     TFOutput = 1/(1+np.exp(-TFOutput))
 #make sure they are on the same order
 drugTargets = drugTargets.loc[drugInput.columns.values,:]
-drugSim = pd.read_csv('../preprocessing/preprocessed_data/ChemicalSims/out_lvl3_similaritiess.csv',index_col=0)
+drugSim = pd.read_csv(drugSimilarityFile,index_col=0)
 drugSim = drugSim.loc[drugInput.columns.values,drugInput.columns.values]
 drugSim = torch.tensor(drugSim.values.copy(), dtype=torch.double)
 
@@ -104,9 +117,9 @@ Y = torch.tensor(TFOutput.values, dtype=torch.double)
 ### Define gradient thresholds
 thresholds = list(np.logspace(-3.5, 3.5, num=50))
 # thresholds = list(np.logspace(-5, 5, num=50))
-thresh = 0.25
-Y_ALL = torch.load(ensembles_path+'preds/Y_'+cell+'_ALL.pt')
-Y_ALL_masked = torch.load(ensembles_path+'preds/Y_'+cell+'_ALL_MASKED.pt')
+thresh = args.error_threshold
+Y_ALL = torch.load(Y_ALL_path)
+Y_ALL_masked = torch.load(Y_ALL_masked_path)
 #no_dmso_samples =  drugInput[drugInput.loc[:,'CS(C)=O']==0]
 #global_threshold_all = np.zeros((no_dmso_samples.shape[0],numberOfModels))
 global_threshold_all = np.zeros((drugInput.shape[1],numberOfModels))
@@ -180,7 +193,7 @@ for i in range(numberOfModels):#range(1):
     # Xin_range = Xin_range.T
     
     ### Get drug-target interactions
-    interactions = pd.read_csv(ensembles_path + 'InteractionScores/l1000_modeltype4_lamda6_' + cell + '_interactionScores_%s.csv' % i,index_col=0)
+    interactions = pd.read_csv(interactionsPath + 'interactionScores_%s.csv' % i,index_col=0)
     drugs = interactions.index.values
     target_space = interactions.columns.values
     # interactions = torch.tensor(interactions.values) * Xin_range
@@ -200,7 +213,8 @@ for i in range(numberOfModels):#range(1):
                                           model.drugLayer.mask.T.detach(), 
                                           drugInput,
                                           drugTargets,
-                                          i)
+                                          i,
+                                          thresh = thresh)
     merged_interactions['model_no'] = i
     if i == 0 :
         all_merged_interactions = merged_interactions.copy()

@@ -1,7 +1,14 @@
 ## Scripts for exploring the MoA of off-target effects of drugs.
 Here we deposit code to perform mechanism of action MoA exploration due to off-target effects of a drug on a transcription factor in a specific sample.
 
-Scripts list:
+### Scripts to be used (**with appropriate input arguments**) in a user case study:
+**Run all these after the having run the scripts in the `learning` and `postprocessing` folders:**
+1. inferEnsembleScoreCaseStudy.py: **Generally for any model and drug module you trained and used** you may run this script first to calculate integrated gradient scores and infer interactions based on them, using an ensemble of multiple models, and make TF activity predictions for masking out interactions for different thresholds of absolute gradient scores (and save them).
+2. InferInteractionScoresLinAlg.py: **ONLY for the specific linear drug module used in the manuscript**, you may run this script first to instead of 1. to calculate drug-target interaction scores.
+3. InferDTICaseStudy.py: After inferring drug-target interaction scores you may run this script second to infer interactions and calculate the error of the model as you remove interactions based on their interaction score, previously calculated.
+4. inferMoACaseStudy.py: Finally using the files generated from the scripts above, you may run this to infer and save the mechanism of action networks that explain the off-target effect of a drug on a specific TF.
+
+### Scripts used in the original [manuscript](https://doi.org/10.1016/j.isci.2024.109509):
 1. inferEnsembleTargetScores.py: This script contains code to calculate integrated gradient scores and infer interactions based on them, using an ensemble of multiple models.
 2. inferTFerrorBasedThreshold.py: This script contains code to calculate the average(global) error (or specifically for a TF of interest like FOXM1) and the corresponding gradient score threshold for inferring drug-target interactions for each drug.
 3. inferDrugTargetsBasedonTFpredictionsALL.py: This script contains code to infer all drug-target interactions of all drugs in a cell line and save them.

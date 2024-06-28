@@ -102,13 +102,10 @@ In a quick overview, the following Python libraries and versions (**although dif
 ```bash
 # After installing anaconda create a conda environment:
 conda create -n myenv python=3.8.8
-conda install numpy
-conda install pandas
-conda install -c conda-forge rdkit
-conda install -c conda-forge scikit-learn
-conda install -c conda-forge matplotlib
-conda install seaborn
-conda install -c anaconda scipy
+conda activate myenv
+conda install -c conda-forge rdkit # it will also install numpy,pandas and matplotlib if required
+conda install -c conda-forge scikit-learn #it will also install scipy
+conda install seaborn -c conda-forge
 pip install networkx
 conda install pytorch torchvision torchaudio -c pytorch
 conda install captum -c pytorch
