@@ -5,7 +5,7 @@ This folder does not contain code regarding inferring the network describing the
 While it contains some Python scripts for inferring dug-target interactions the rest can be found again in the MoA folder.
 
 ### Scripts to be used (**with appropriate input arguments**) in a user case study:
-** Run these after having trained models and have evaluated their performance with the scripts in the learining folder**
+**Run these after having trained models and have evaluated their performance with the scripts in the `learning` folder**
 1. inferOffTargetEffectDeltaCaseStudy.py: First run this script to estimate ΔTF when masking known drug-target interactions, as a proxy of the off-target effect of a drug on TFs' activities.
 2. chooseTFsWithOffTargetsCaseStudy.R: Then run this to select TFs that are well-fitted and samples where a drug seems to have a large off-target effect according to the models. 
 
