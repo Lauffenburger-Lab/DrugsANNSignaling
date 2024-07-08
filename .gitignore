@@ -65,6 +65,7 @@ results/A375_ensembles/all_merged_interactions_drugs.csv
 results/A375_ensembles/all_merged_interactions_drugs_withsignalRange.csv
 results/A375_ensembles/grads_vs_weights_A375.csv
 results/A375_ensembles/test/*.png
+results/A375_ensembles/NewDrugsInteractionScores
 results/FinalEnsemble/models
 results/FinalEnsemble/preds
 results/FinalEnsemble/MoA
@@ -153,7 +154,9 @@ figures/figure2A_A375_all.png
 figures/figure3B_allA375.eps
 figures/figure3B_case_study.eps
 learning/__pycache__/
+learning/PredictNewDrugs.py
 MoA/__pycache__/
+MoA/NewDrugInteractionScores.py
 ShinyAPP
 ShinyAPP/*
 graphical_abstract
