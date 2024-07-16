@@ -8,7 +8,7 @@
 7. trimPKN.py: Script to trim the prior knowledge network (PKN).
 
 ## Scripts to be used (**with appropriate input arguments**) in a user case study:
-1. inferOffTargetEffectDeltaCaseStudy.py: Run this to infer TF activity for some samples and pre-process to remove samples and TFs of bad quality for your own case study.
+1. inferTFactivityCaseStudy.py: Run this to infer TF activity for some samples and pre-process to remove samples and TFs of bad quality for your own case study.
 
 ## Folder structure
 1. preprocessed_data: It contains the pre-processed data from the above scripts to be used later for training models and other downstream analyses of the study.
