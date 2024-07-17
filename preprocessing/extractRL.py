@@ -1,5 +1,23 @@
 import pandas as pd
 import numpy
+import argparse
+
+### Initialize the parsed arguments
+parser = argparse.ArgumentParser(description='Extract receptor-ligands from the PKN')
+parser.add_argument('--species', action='store', help='species_id',default=9606)
+parser.add_argument('--add', action='store',help='interactions to manually add',default='preprocessed_data/RL/add.tsv')
+parser.add_argument('--remove', action='store',help='interactions to manually remove',default='preprocessed_data/RL/remove.tsv')
+parser.add_argument('--edit', action='store',help='interactions to manually edit',default='preprocessed_data/RL/edit.tsv')
+parser.add_argument('--RLFull', help='all receptor-ligand interactions in .tsv format', default = 'preprocessed_data/PKN/RLFull.tsv')
+parser.add_argument('--RL', help='receptors-ligands in .tsv format filtered', default='preprocessed_data/PKN/RL.tsv')
+args = parser.parse_args()
+species = int(args.species)
+add = args.add
+remove = args.remove
+edit = args.edit
+RLFull = args.RLFull
+RL = args.RL
+
 def contains(haystack, needles):
     result = numpy.full(len(haystack), False, dtype=bool)
     for curNeedle in needles:
@@ -7,7 +25,8 @@ def contains(haystack, needles):
     return result
 
 
-human = 9606
+
+# species = 9606
 trustedSource = numpy.array(['KEGG',
               'InnateDB',
               'Ramilowski2015',
@@ -21,7 +40,7 @@ trustedSource = numpy.array(['KEGG',
 
 
 omnipath = pd.read_csv('../data/omnipath_webservice_interactions__recent.tsv', sep='\t', low_memory=False)
-humanFilter = omnipath['ncbi_tax_id_target'] == human
+humanFilter = omnipath['ncbi_tax_id_target'] == species
 omnipath = omnipath.loc[humanFilter, :]
 
 #Only ligand-receptor interactions
@@ -53,7 +72,7 @@ paradox = numpy.logical_and(omnipath['stimulation'].values==1, omnipath['inhibit
 omnipath.loc[paradox, ['stimulation', 'inhibition']] = 0
 
 #Add interactions
-currationAdd = pd.read_csv('preprocessed_data/RL/add.tsv', sep='\t', low_memory=False)
+currationAdd = pd.read_csv(add, sep='\t', low_memory=False)
 for i in range(currationAdd.shape[0]):
     curSource = currationAdd.iloc[i,:]['source']
     curTarget = currationAdd.iloc[i,:]['target']
@@ -66,7 +85,7 @@ for i in range(currationAdd.shape[0]):
         omnipath.loc[inList,'references'] = omnipath.loc[inList,'references'] + ';' + currationAdd.iloc[i,:]['references']
 
 #Remove interactions
-currationRemove = pd.read_csv('preprocessed_data/RL/remove.tsv', sep='\t', low_memory=False)
+currationRemove = pd.read_csv(remove, sep='\t', low_memory=False)
 for i in range(currationRemove.shape[0]):
     curSource = currationRemove.iloc[i,:]['source']
     curTarget = currationRemove.iloc[i,:]['target']
@@ -78,7 +97,7 @@ for i in range(currationRemove.shape[0]):
 
 
 #Edit interactions
-currationEdit = pd.read_csv('preprocessed_data/RL/edit.tsv', sep='\t', low_memory=False)
+currationEdit = pd.read_csv(edit, sep='\t', low_memory=False)
 for i in range(currationEdit.shape[0]):
     curSource = currationEdit.iloc[i,:]['source']
     curTarget = currationEdit.iloc[i,:]['target']
@@ -113,7 +132,7 @@ omnipath = pd.concat([omnipath.copy(), revOmni])
 omnipath['direction'] = 1
 
 
-omnipath.to_csv('preprocessed_data/PKN/RLFull.tsv', sep='\t', index=False)
+omnipath.to_csv(RLFull, sep='\t', index=False)
 
 #Only directed interactions
 #directed = omnipath['direction'] == 1
@@ -127,5 +146,5 @@ omnipath =  omnipath.loc[pknFilter, :]
 
 
 
-omnipath.to_csv('preprocessed_data/PKN/RL.tsv', sep='\t', index=False)
+omnipath.to_csv(RL, sep='\t', index=False)
 

@@ -1,5 +1,25 @@
 import pandas as pd
 import numpy
+import argparse
+
+### Initialize the parsed arguments
+parser = argparse.ArgumentParser(description='Extract PKN')
+parser.add_argument('--species_id', action='store', help='species_id',default=9606)
+parser.add_argument('--add_curation', action='store',help='interactions to manually add',default='preprocessed_data/PKN/add.tsv')
+parser.add_argument('--remove_curation', action='store',help='interactions to manually remove',default='preprocessed_data/PKN/remove.tsv')
+parser.add_argument('--edit_curation', action='store',help='interactions to manually edit',default='preprocessed_data/PKN/edit.tsv')
+parser.add_argument('--pknFull', help='all kept interactions before trimming in .tsv format', default = 'preprocessed_data/PKN/pknFull.tsv')
+parser.add_argument('--pknUniprot', help='all kept interactions with uniptor ids in .tsv format', default = 'preprocessed_data/PKN/pkn.tsv')
+parser.add_argument('--RLinteractions', help='receptors-ligands in .tsv format filtered', default='preprocessed_data/PKN/RL.tsv')
+args = parser.parse_args()
+species_id = int(args.species_id)
+add_curation = args.add_curation
+remove_curation = args.remove_curation
+edit_curation = args.edit_curation
+pknFull = args.pknFull
+pknUniprot = args.pknUniprot
+RLinteractions = args.RLinteractions
+
 def contains(haystack, needles):
     result = numpy.full(len(haystack), False, dtype=bool)
     for curNeedle in needles:
@@ -19,7 +39,7 @@ def mergeContent(df):
     return result
 
 
-human = 9606
+# human = 9606
 trustedSource = numpy.array(['KEGG',
              'Macrophage',
              'InnateDB',
@@ -33,7 +53,7 @@ trustedSource = numpy.array(['KEGG',
 #trustedReferences = numpy.array(['SIGNOR:31160049', 'SIGNOR:17145764'])
 
 omnipath = pd.read_csv('../data/omnipath_webservice_interactions__recent.tsv', sep='\t', low_memory=False)
-humanFilter = omnipath['ncbi_tax_id_target'] == human
+humanFilter = omnipath['ncbi_tax_id_target'] == species_id
 omnipath = omnipath.loc[humanFilter, :]
 
 #Only in omnipath
@@ -55,7 +75,7 @@ referenceFilter = omnipath['references']=='nan'
 omnipath = omnipath.loc[referenceFilter==False, :]
 
 #Add interactions
-currationAdd = pd.read_csv('preprocessed_data/PKN/add.tsv', sep='\t', low_memory=False)
+currationAdd = pd.read_csv(add_curation, sep='\t', low_memory=False)
 for i in range(currationAdd.shape[0]):
     curSource = currationAdd.iloc[i,:]['source']
     curTarget = currationAdd.iloc[i,:]['target']
@@ -68,7 +88,7 @@ for i in range(currationAdd.shape[0]):
         omnipath.loc[inList,'references'] = omnipath.loc[inList,'references'] + ';' + currationAdd.iloc[i,:]['references']
 
 #Remove interactions
-currationRemove = pd.read_csv('preprocessed_data/PKN/remove.tsv', sep='\t', low_memory=False)
+currationRemove = pd.read_csv(remove_curation, sep='\t', low_memory=False)
 for i in range(currationRemove.shape[0]):
     curSource = currationRemove.iloc[i,:]['source']
     curTarget = currationRemove.iloc[i,:]['target']
@@ -79,7 +99,7 @@ for i in range(currationRemove.shape[0]):
         print('No match for remove', currationRemove.iloc[i,:])
 
 #Edit interactions
-currationEdit = pd.read_csv('preprocessed_data/PKN/edit.tsv', sep='\t', low_memory=False)
+currationEdit = pd.read_csv(edit_curation, sep='\t', low_memory=False)
 for i in range(currationEdit.shape[0]):
     curSource = currationEdit.iloc[i,:]['source']
     curTarget = currationEdit.iloc[i,:]['target']
@@ -128,10 +148,8 @@ omnipath = omnipath.drop_duplicates()
 #Ensure integers
 omnipath[['direction', 'stimulation', 'inhibition']] = omnipath[['direction', 'stimulation', 'inhibition']].astype(int)
 
-
-
 #Store full network
-omnipath.to_csv('preprocessed_data/PKN/pknFull.tsv', sep='\t', index=False)
+omnipath.to_csv(pknFull, sep='\t', index=False)
 
 #Keep only trusted sources or references
 # pknFilter = numpy.full(omnipath.shape[0], False, dtype=bool)
@@ -153,7 +171,7 @@ omnipath =  omnipath.loc[pknFilter, :]
 
 
 #Drop interactions allready in RL net
-RL = pd.read_csv('preprocessed_data/PKN/RL.tsv', sep='\t', low_memory=False)
+RL = pd.read_csv(RLinteractions, sep='\t', low_memory=False)
 interactionOmnipath = omnipath['source'] + omnipath['target']
 interactionRL = RL['source'] + RL['target']
 overlappingInteractions = numpy.isin(interactionOmnipath, interactionRL)
@@ -170,6 +188,6 @@ uniprot = uniprot['Entry'].values
 uniprotFilter = numpy.logical_and(numpy.isin(omnipath['source'].values, uniprot), numpy.isin(omnipath['target'].values, uniprot))
 omnipath = omnipath.loc[uniprotFilter, :]
 
-omnipath.to_csv('preprocessed_data/PKN/pkn.tsv', sep='\t', index=False)
+omnipath.to_csv(pknUniprot, sep='\t', index=False)
 
 

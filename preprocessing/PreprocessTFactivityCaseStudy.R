@@ -6,8 +6,14 @@ library(doFuture)
 cores <- 16
 registerDoFuture()
 plan(multisession,workers = cores)
-outputFile = "preprocessed_data/TF_activities/l1000_allgenes_lvl3_tfs.tsv"
-inputFile <- "preprocessed_data/TF_activities/unmerged_l1000_allgenes_lvl3_tfs.rds"
+
+# Access command-line arguments
+args <- commandArgs(trailingOnly = TRUE)
+
+inputFile <- args[1]
+outputFile = args[2]
+# inputFile <- 'preprocessed_data/unmerged_l1000_allgenes_lvl3_tfs.rds'
+# outputFile = "preprocessed_data/TF_activities/l1000_allgenes_lvl3_tfs.tsv"
 # Read inferred TF activities
 TF_activities <- readRDS(inputFile)
 

@@ -1,10 +1,17 @@
 # Load requeired packages
 library("dorothea")
 library(tidyverse)
-inputGeneExpr <- 'preprocessed_data/l1000_all_genes_lvl3_drugs_with_targets_exemplar.rds'
-outputFile = "preprocessed_data/TF_activities/unmerged_l1000_allgenes_lvl3_tfs.rds"
+
+# Access command-line arguments
+args <- commandArgs(trailingOnly = TRUE)
+
+inputGeneExpr <- args[1]
+outputFile = args[2]
+# inputGeneExpr <- 'preprocessed_data/l1000_all_genes_lvl3_drugs_with_targets_exemplar.rds'
+# outputFile = "preprocessed_data/TF_activities/unmerged_l1000_allgenes_lvl3_tfs.rds"
 minNrOfGenes = 5
 E <- readRDS(inputGeneExpr)
+# E <- E[,1:15000]
 gc()
 
 dorotheaData = read.table('../data/dorothea.tsv', sep = "\t", header=TRUE)
