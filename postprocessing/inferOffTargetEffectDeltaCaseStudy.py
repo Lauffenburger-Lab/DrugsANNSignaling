@@ -114,11 +114,11 @@ for i in range(numberOfModels):
     Yhat_masked_1 = model.projectionLayer(YhatFull_masked)
     Υ_ALL_masked_1[i, :, :] = Yhat_masked_1.detach()
 
-    Xin_masked = torch.mul(Xin, 1.0 - mask)
-    fullX_masked = model.inputLayer(Xin_masked)
-    YhatFull_masked = model.network(fullX_masked)
-    Yhat_masked_2 = model.projectionLayer(YhatFull_masked)
-    Υ_ALL_masked_2[i, :, :] = Yhat_masked_2.detach()
+    # Xin_masked = torch.mul(Xin, 1.0 - mask)
+    # fullX_masked = model.inputLayer(Xin_masked)
+    # YhatFull_masked = model.network(fullX_masked)
+    # Yhat_masked_2 = model.projectionLayer(YhatFull_masked)
+    # Υ_ALL_masked_2[i, :, :] = Yhat_masked_2.detach()
     print2log('Finished model %s'%i)
     model_times.append(time.time()-prev_time)
 
@@ -126,9 +126,9 @@ print2log('Average time per model = %s seconds'%np.mean(model_times))
 # Calculate mean predictions
 Yhat = torch.mean(Υ_ALL,0)
 Yhat_masked = torch.mean(Υ_ALL_masked_1,0)
-Yhat_masked_2 = torch.mean(Υ_ALL_masked_2,0)
+# Yhat_masked_2 = torch.mean(Υ_ALL_masked_2,0)
 
-# Per TF performance in VCAP
+# Per TF performance in the cell line of interest
 performance = pearson_r(Y.detach(), Yhat.detach()).detach().numpy()
 performance = pd.DataFrame(performance)
 performance.index = TFOutput.columns
@@ -142,12 +142,12 @@ Delta1.columns =  TFOutput.columns
 Delta1.index =  TFOutput.index
 Delta1.to_csv(res_dir+'DeltaTF1.csv')
 
-# Calculate Delta2
-Delta2 = Yhat_masked_2 - Yhat
-Delta2 = pd.DataFrame(Delta2.detach().numpy())
-Delta2.columns =  TFOutput.columns
-Delta2.index =  TFOutput.index
-Delta2.to_csv(res_dir+ 'DeltaTF2.csv')
+# # Calculate Delta2
+# Delta2 = Yhat_masked_2 - Yhat
+# Delta2 = pd.DataFrame(Delta2.detach().numpy())
+# Delta2.columns =  TFOutput.columns
+# Delta2.index =  TFOutput.index
+# Delta2.to_csv(res_dir+ 'DeltaTF2.csv')
 
 runtime = time.time() - start_time
 print2log('Total process time = %s seconds'%runtime)

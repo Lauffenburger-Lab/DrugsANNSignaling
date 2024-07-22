@@ -2,7 +2,7 @@
 This folder contains scripts to train machine learning models to predict the TF activity of drug perturbations, as well as some scripts related to tuning some parameters of the models.
 
 ### Scripts to be used (**with appropriate input arguments**) in a user case study:
-1. macrophageNetTrainOne.py : First run this script with the data of your choice to train a whole cell line-specific model (drug layer + LEMBAS signaling). With the argument 'no' a numeric id is given to the trained models and it can be used to parallelize the training of the ensemble of models.
+1. macrophageNetTrainOneCaseStudy.py : First run this script with the data of your choice to train a whole cell line-specific model (drug layer + LEMBAS signaling). With the argument 'no' a numeric id is given to the trained models and it can be used to parallelize the training of the ensemble of models.
 2. CellLineSpecificEvalEnsembleALL.py: Then run this script to evaluate how well the model fitted the activity of each TF (the training performance) 
 
 ### Scripts used in the original [manuscript](https://doi.org/10.1016/j.isci.2024.109509):

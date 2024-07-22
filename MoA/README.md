@@ -7,6 +7,7 @@ Here we deposit code to perform mechanism of action MoA exploration due to off-t
 2. InferInteractionScoresLinAlg.py: **ONLY for the specific linear drug module used in the manuscript**, you may run this script first to instead of 1. to calculate drug-target interaction scores.
 3. InferDTICaseStudy.py: After inferring drug-target interaction scores you may run this script second to infer interactions and calculate the error of the model as you remove interactions based on their interaction score, previously calculated.
 4. inferMoACaseStudy.py: Finally using the files generated from the scripts above, you may run this to infer and save the mechanism of action networks that explain the off-target effect of a drug on a specific TF.
+5. DrugTargetInteractionSignCaseStudy.py: You can examine the sing of the interaction between a target in the constructed MoA network and the drug of interest using this script. It will print out and plot information about the activity of the target node in the initial perturbation, the pseudo-steady state, as well as the sign of the interaction score.
 
 ### Scripts used in the original [manuscript](https://doi.org/10.1016/j.isci.2024.109509):
 1. inferEnsembleTargetScores.py: This script contains code to calculate integrated gradient scores and infer interactions based on them, using an ensemble of multiple models.
