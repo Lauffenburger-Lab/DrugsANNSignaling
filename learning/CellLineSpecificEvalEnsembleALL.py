@@ -72,7 +72,7 @@ spectralCapacity = numpy.exp(numpy.log(1e-2)/bionetParams['iterations'])
 drugInput = pandas.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_A375-conditions_drugs.tsv', 
                             sep='\t', low_memory=False,index_col=0)
 drugSmiles = drugInput.columns.values
-drugTargets = pandas.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_allcells-drugs_targets_A375.tsv', sep='\t', low_memory=False, index_col=0)
+drugTargets = pandas.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_A375-drugs_targets.tsv', sep='\t', low_memory=False, index_col=0)
 TFOutput = pandas.read_csv('../preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv', sep='\t', low_memory=False, index_col=0)
 TFOutput = TFOutput.loc[drugInput.index, :]
 train_pear = numpy.zeros((no_models,TFOutput.shape[1]))
