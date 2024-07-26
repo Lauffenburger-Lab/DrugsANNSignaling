@@ -598,6 +598,7 @@ df_map = pd.DataFrame(map, index=[0]).T
 df_map = df_map.reset_index()
 df_map.columns = ['sources_name','sources']
 all_sources_counted = all_sources_counted.merge(df_map,on=['sources'],how='left')
+assert len(all_sources_counted)>0, 'No inferred drug`s targets kept!' 
 
 df_all = df_all.iloc[:,[0,1,2,3,4,6]]
 avg_weights = df_all.groupby(['name_source','name_target']).agg(mean_weight = pd.NamedAgg(column ='weight', aggfunc=np.mean))

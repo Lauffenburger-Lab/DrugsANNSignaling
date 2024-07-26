@@ -23,6 +23,13 @@ The current repository contains code for:
 5. Drug-target interaction inference.
 6. Code to re-create the results of the research article.
 
+## User case studies
+To run your own case study follow the instructions in each folder (there are user friendly scripts explained in the README files of each folder) :
+1. First visit the preprocessing folder.
+2. Then visit the learning folder.
+3. Then visit the postprocessing folder.
+4. Finally visit the MoA folder.
+
 ## Data
 The transcriptomic signatures (level 3 and level 5 profiles) of the L1000 CMap resource[^1] are used for this study, together with data from the Bioconductor resource[^2].
 

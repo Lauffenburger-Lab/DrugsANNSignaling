@@ -10,6 +10,10 @@
 ## Scripts to be used (**with appropriate input arguments**) in a user case study:
 1. inferTFactivityCaseStudy.py: Run this to infer TF activity for some samples for your own case study.
 2. PreprocessTFactivityCaseStudy.R: Run this (optionally) to pre-process and remove samples and TFs of bad quality.
+3. extractRL.py: Script to extract receptor-ligand (RL) interactions.
+4. extractPKN.py: Script to extract prior knowledge network (PKN) of protein-protein interactions.
+5. ConnectData2PKN.py: Script to keep TFs, drugs, and targets that can be connected to the PKN, and save parts of the PKN to forcefully keep even after trimming.
+6. trimPKN.py: Script to trim the prior knowledge network (PKN).
 
 ## Folder structure
 1. preprocessed_data: It contains the pre-processed data from the above scripts to be used later for training models and other downstream analyses of the study.
