@@ -97,7 +97,7 @@ parser.add_argument('--source_freq_thresh', action='store', default=0.6)
 parser.add_argument('--edge_thresh_init', action='store', default=0.5)
 ## Define case study parameters
 parser.add_argument('--moa_off_target', action='store',default='any')
-parser.add_argument('--cell_line', action='store',default='A375')
+parser.add_argument('--Prefix', action='store',default='A375')
 parser.add_argument('--TF', action='store',default='Q08050')
 parser.add_argument('--TF_gene', action='store',default='FOXM1')
 parser.add_argument('--drug', action='store',default='C[C@]12O[C@H](C[C@]1(O)CO)n1c3ccccc3c3c4C(=O)NCc4c4c5ccccc5n2c4c13')
@@ -122,7 +122,7 @@ PKN = args.PKN
 res_dir = args.res_dir
 interactionScorePattern = args.interactionScorePattern
 inputPath = ensembles_path + 'models/' + inputPattern
-cell = args.cell_line
+Prefix = args.Prefix
 
 ### Choose TF and drug to investigate
 # interestingSamples = pd.read_csv(ensembles_path+'interestingSamples.csv',index_col=1)
@@ -238,7 +238,7 @@ for i in range(numberOfModels):#range(1):
     Xin =  ratioMatrix.T * Xin.squeeze()
     Xin = Xin.detach()
 
-    # merged_interaction = pd.read_csv(ensembles_path+'InteractionScores/l1000_modeltype4_lamda6_'+cell+'_mergedInteractions_ROC.csv',index_col=0)
+    # merged_interaction = pd.read_csv(ensembles_path+'InteractionScores/l1000_modeltype4_lamda6_'+Prefix+'_mergedInteractions_ROC.csv',index_col=0)
     # merged_interaction = merged_interaction[merged_interaction['drug']==drug]
     # merged_interaction = merged_interaction[merged_interaction['Inferred']=='Interaction']
 
@@ -524,7 +524,7 @@ for i in range(numberOfModels):#range(1):
     sign = lambda a: '-' if (a<0) else '+'
     NetworkPandas['interaction'] = [sign(w) for w in NetworkPandas["weight"].values]
     # NetworkPandas['interaction'] = np.sign(NetworkPandas["weight"])
-    NetworkPandas.to_csv(res_dir+'MoA/'+drug_name+'/'+cell+'_'+drug_name+'_'+TF_gene+'_moa_model_%s.csv'%i)
+    NetworkPandas.to_csv(res_dir+'MoA/'+drug_name+'/'+Prefix+'_'+drug_name+'_'+TF_gene+'_moa_model_%s.csv'%i)
     NetworkPandas['model_no'] = i
     node_type = []
     nodes_all = list(SignalingNet.nodes())
@@ -538,7 +538,7 @@ for i in range(numberOfModels):#range(1):
     df_node_types = pd.DataFrame({'id':nodes_all,'type':node_type})
     df_node_types = df_node_types.merge(df_map, on='id', how='left')
     df_node_types = df_node_types.drop(['id'],axis=1)
-    df_node_types.to_csv(res_dir+'MoA/'+drug_name+'/'+cell+'_'+drug_name+'_'+TF_gene+'_node_types_%s.csv'%i)
+    df_node_types.to_csv(res_dir+'MoA/'+drug_name+'/'+Prefix+'_'+drug_name+'_'+TF_gene+'_node_types_%s.csv'%i)
     
     if (i==0):
         df_all = NetworkPandas.copy()
@@ -570,7 +570,7 @@ for i in range(numberOfModels):#range(1):
     NetworkPandas = NetworkPandas.merge(df_map.rename({'id': 'target'}, axis=1), on='target', how='left')
     NetworkPandas = NetworkPandas.rename({'name': 'name_target'}, axis=1)
     NetworkPandas['interaction'] = [sign(w) for w in NetworkPandas["weight"].values]
-    NetworkPandas.to_csv(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_short_model_%s.csv' % i)
+    NetworkPandas.to_csv(res_dir + 'MoA/'+drug_name+'/'+ Prefix +'_'+drug_name+'_'+TF_gene+ '_moa_short_model_%s.csv' % i)
 
     print2log('Connected %s' %nx.is_connected(SignalingNet.to_undirected()))
     print2log('Unique nodes %s'%len(SignalingNet.nodes()))
@@ -578,14 +578,14 @@ for i in range(numberOfModels):#range(1):
     print2log('Finished MoA for model %s'%i)
     models_times.append(time.time() - prev_time)
 
-df_all.to_csv(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_all_models.csv')
+df_all.to_csv(res_dir + 'MoA/'+drug_name+'/'+ Prefix +'_'+drug_name+'_'+TF_gene+ '_all_models.csv')
 mean_bias = mean_bias/numberOfModels
 avg_time = np.mean(models_times)/60
 print2log('Average time per model = %s minutes'%avg_time)
 runtime_1 = (time.time() - start_time)/60
 print2log('Total 1st step time = %s minutes'%runtime_1)
 #%%
-#df_all = pd.read_csv(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_all_models.csv',index_col=0)
+#df_all = pd.read_csv(res_dir + 'MoA/'+drug_name+'/'+ Prefix +'_'+drug_name+'_'+TF_gene+ '_all_models.csv',index_col=0)
 # Ensemble by model
 start_time = time.time()
 #source_freq_thresh = 0.5
@@ -797,7 +797,7 @@ NetworkPandas = NetworkPandas.rename({'name': 'name_target'}, axis=1)
 sign = lambda a: '-' if (a<0) else '+'
 NetworkPandas['interaction'] = [sign(w) for w in NetworkPandas["weight"].values]
 NetworkPandas = NetworkPandas.drop_duplicates()
-NetworkPandas.to_csv(res_dir+'MoA/'+drug_name+'/'+cell+'_'+drug_name+'_'+TF_gene+'_moa_model_ensembleFiltered.csv')
+NetworkPandas.to_csv(res_dir+'MoA/'+drug_name+'/'+Prefix+'_'+drug_name+'_'+TF_gene+'_moa_model_ensembleFiltered.csv')
 
 node_type = []
 nodes_all = list(SignalingNet.nodes())
@@ -815,7 +815,7 @@ for node in nodes_all:
         node_type.append('mid_node')
     names.append(node_name)
 df_node_types = pd.DataFrame({'name':names,'type':node_type})
-df_node_types.to_csv(res_dir+'MoA/'+drug_name+'/'+cell+'_'+drug_name+'_'+TF_gene+'_node_types_ensembleFiltered.csv')
+df_node_types.to_csv(res_dir+'MoA/'+drug_name+'/'+Prefix+'_'+drug_name+'_'+TF_gene+'_node_types_ensembleFiltered.csv')
 
 print2log('The whole trimmed network')
 print2log(NetworkPandas)
@@ -834,7 +834,7 @@ NetworkPandas_short = NetworkPandas_short.rename({'name': 'name_target'}, axis=1
 sign = lambda a: '-' if (a<0) else '+'
 NetworkPandas_short['interaction'] = [sign(w) for w in NetworkPandas_short["weight"].values]
 NetworkPandas_short = NetworkPandas_short.drop_duplicates()
-NetworkPandas_short.to_csv(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_short_model_ensembled.csv')
+NetworkPandas_short.to_csv(res_dir + 'MoA/'+drug_name+'/'+ Prefix +'_'+drug_name+'_'+TF_gene+ '_moa_short_model_ensembled.csv')
 print2log('The shortest path trimmed network')
 print2log(NetworkPandas_short)
 
@@ -858,7 +858,7 @@ NetworkPandas_frequent = NetworkPandas_frequent[NetworkPandas_frequent['path']==
 sign = lambda a: '-' if (a<0) else '+'
 NetworkPandas_frequent['interaction'] = [sign(w) for w in NetworkPandas_frequent["weight"].values]
 NetworkPandas_frequent = NetworkPandas_frequent.drop_duplicates()
-NetworkPandas_frequent.to_csv(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_frequent_model_ensembled.csv')
+NetworkPandas_frequent.to_csv(res_dir + 'MoA/'+drug_name+'/'+ Prefix +'_'+drug_name+'_'+TF_gene+ '_moa_frequent_model_ensembled.csv')
 print2log('The most frequent trimmed network')
 print2log(NetworkPandas_frequent)
 
@@ -882,7 +882,7 @@ for edge in subnet.edges(data=True):
 # Turn off unnecessary x and y axis labels
 ax.set_axis_off()
 # Save figure with a tight bbox to ensure it isn't cut off
-fig.savefig(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_frequent_model_ensembled.png', 
+fig.savefig(res_dir + 'MoA/'+drug_name+'/'+ Prefix +'_'+drug_name+'_'+TF_gene+ '_moa_frequent_model_ensembled.png',
             bbox_inches='tight', dpi=600)
 
 # Plot the most shortest path
@@ -905,7 +905,7 @@ for edge in subnet.edges(data=True):
 # Turn off unnecessary x and y axis labels
 ax.set_axis_off()
 # Save figure with a tight bbox to ensure it isn't cut off
-fig.savefig(res_dir + 'MoA/'+drug_name+'/'+ cell +'_'+drug_name+'_'+TF_gene+ '_moa_short_model_ensembled.png', 
+fig.savefig(res_dir + 'MoA/'+drug_name+'/'+ Prefix +'_'+drug_name+'_'+TF_gene+ '_moa_short_model_ensembled.png',
             bbox_inches='tight', dpi=600)
 
 print2log(all_sources_counted)
