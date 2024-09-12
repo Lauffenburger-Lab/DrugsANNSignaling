@@ -140,7 +140,7 @@ for (i in 1:length(rep_size)){
   print(paste0('Finished n: ',n))
 }
 rownames(random_corrs) <- rep_size
-saveRDS(random_corrs,'random_correlations.rds')
+saveRDS(random_corrs,'preprocessed_data/TF_activities/random_correlations.rds')
 
 
 TFs_cor$p.value <- 1

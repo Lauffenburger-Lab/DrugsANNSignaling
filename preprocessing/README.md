@@ -14,6 +14,8 @@
 4. extractPKN.py: Script to extract prior knowledge network (PKN) of protein-protein interactions.
 5. ConnectData2PKN.py: Script to keep TFs, drugs, and targets that can be connected to the PKN, and save parts of the PKN to forcefully keep even after trimming.
 6. trimPKN.py: Script to trim the prior knowledge network (PKN).
+7. CSV_TSV_to_RDS.R : **Simple** R script that converts CSV or TSV files to an RDS file. All of them need to have rownames and column names. The first column will be considered that it contains the rownames. **The saved RDS file is going to contain a data frame, not a matrix/array.**
+8. RDS_to_CSV_TSV.R : **Simple** R script that converts RDS file to CSV or TSV file.
 
 ## Folder structure
 1. preprocessed_data: It contains the pre-processed data from the above scripts to be used later for training models and other downstream analyses of the study.

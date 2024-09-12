@@ -10,7 +10,6 @@ parser.add_argument('--add_curation', action='store',help='interactions to manua
 parser.add_argument('--remove_curation', action='store',help='interactions to manually remove',default='preprocessed_data/PKN/remove.tsv')
 parser.add_argument('--edit_curation', action='store',help='interactions to manually edit',default='preprocessed_data/PKN/edit.tsv')
 parser.add_argument('--pknUniprot', help='all kept interactions with uniptor ids in .tsv format', default = 'preprocessed_data/PKN/pkn.tsv')
-parser.add_argument('--RLinteractions', help='receptors-ligands in .tsv format filtered', default='preprocessed_data/PKN/RL.tsv')
 parser.add_argument('--DTIpath', action='store',help='untrimmed drug-target interactions in long format saved in .tsv format',default='preprocessed_data/PKN/L1000_lvl3_DT.tsv')
 parser.add_argument('--targetedTFs', help='path to load TFs that are directly targeted by a drug in .tsv format', default='preprocessed_data/TF_activities/tfs_targetd_alls_genes_lvl3.tsv')
 parser.add_argument('--forced2keep', help='path to load PKN parts to forcefuly keep because it contains targeted TFs', default = 'preprocessed_data/PKN/L1000_latest_Add_lvl3.tsv')
@@ -24,7 +23,6 @@ add_curation = args.add_curation
 remove_curation = args.remove_curation
 edit_curation = args.edit_curation
 pknUniprot = args.pknUniprot
-RLinteractions = args.RLinteractions
 DTIpath = args.DTIpath
 TFpath = args.TFpath
 TrimmedTFpath = args.TrimmedTFpath
