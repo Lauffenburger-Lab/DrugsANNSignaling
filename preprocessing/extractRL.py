@@ -10,6 +10,7 @@ parser.add_argument('--remove', action='store',help='interactions to manually re
 parser.add_argument('--edit', action='store',help='interactions to manually edit',default='preprocessed_data/RL/edit.tsv')
 parser.add_argument('--RLFull', help='all receptor-ligand interactions in .tsv format', default = 'preprocessed_data/PKN/RLFull.tsv')
 parser.add_argument('--RL', help='receptors-ligands in .tsv format filtered', default='preprocessed_data/PKN/RL.tsv')
+parser.add_argument('--WholePKN', help='all prior knowledge interactions tha', default='../data/omnipath_webservice_interactions__recent.tsv')
 args = parser.parse_args()
 species = int(args.species)
 add = args.add
@@ -17,6 +18,7 @@ remove = args.remove
 edit = args.edit
 RLFull = args.RLFull
 RL = args.RL
+WholePKN = args.WholePKN
 
 def contains(haystack, needles):
     result = numpy.full(len(haystack), False, dtype=bool)
@@ -39,7 +41,7 @@ trustedSource = numpy.array(['KEGG',
 
 
 
-omnipath = pd.read_csv('../data/omnipath_webservice_interactions__recent.tsv', sep='\t', low_memory=False)
+omnipath = pd.read_csv(WholePKN, sep='\t', low_memory=False)
 humanFilter = omnipath['ncbi_tax_id_target'] == species
 omnipath = omnipath.loc[humanFilter, :]
 

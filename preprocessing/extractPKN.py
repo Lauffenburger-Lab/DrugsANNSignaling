@@ -11,6 +11,7 @@ parser.add_argument('--edit_curation', action='store',help='interactions to manu
 parser.add_argument('--pknFull', help='all kept interactions before trimming in .tsv format', default = 'preprocessed_data/PKN/pknFull.tsv')
 parser.add_argument('--pknUniprot', help='all kept interactions with uniptor ids in .tsv format', default = 'preprocessed_data/PKN/pkn.tsv')
 parser.add_argument('--RLinteractions', help='receptors-ligands in .tsv format filtered', default='preprocessed_data/PKN/RL.tsv')
+parser.add_argument('--WholePKN', help='all prior knowledge interactions tha', default='../data/omnipath_webservice_interactions__recent.tsv')
 args = parser.parse_args()
 species_id = int(args.species_id)
 add_curation = args.add_curation
@@ -19,6 +20,7 @@ edit_curation = args.edit_curation
 pknFull = args.pknFull
 pknUniprot = args.pknUniprot
 RLinteractions = args.RLinteractions
+WholePKN = args.WholePKN
 
 def contains(haystack, needles):
     result = numpy.full(len(haystack), False, dtype=bool)
@@ -52,7 +54,7 @@ trustedSource = numpy.array(['KEGG',
 
 #trustedReferences = numpy.array(['SIGNOR:31160049', 'SIGNOR:17145764'])
 
-omnipath = pd.read_csv('../data/omnipath_webservice_interactions__recent.tsv', sep='\t', low_memory=False)
+omnipath = pd.read_csv(WholePKN = args.WholePKN, sep='\t', low_memory=False)
 humanFilter = omnipath['ncbi_tax_id_target'] == species_id
 omnipath = omnipath.loc[humanFilter, :]
 
