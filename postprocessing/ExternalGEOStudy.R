@@ -12,14 +12,22 @@ library(dorothea)
 library(ggplot2)
 library(ggpubr)
 
-# Load data
+# Get a querry from GEO
+gset <- getGEO("GSE31534", GSEMatrix =TRUE, getGPL=FALSE)
+
+# Load the raw downloaded data (we decided to not use the preprocess data)
 # You can downlaod the file first from GEO
-list_files <- list.files('GSE31534/')
+list_files <- list.files('../../GSE31534/')
+pheno <- gset$GSE31534_series_matrix.txt.gz@phenoData
+
 raw <- ReadAffy(celfile.path = "../../GSE31534",filenames = list_files,
                 phenoData = pheno)
 exprs_rma  <- affy::rma(raw)
-cols <- data.frame(samples=colnames(exprs(exprs_rma)))
-df <- left_join(cols,pheno %>% rownames_to_column('samples'))
+# cols <- data.frame(samples=colnames(exprs(exprs_rma)))
+# df <- left_join(cols,pData(pheno) %>% rownames_to_column('samples'))
+df <- pData(pheno)
+rownames(df) <- colnames(exprs(exprs_rma))
+df <- df%>% rownames_to_column('samples')
 df <- df %>%  separate(`knockdown:ch1`,into = c('pert_type','knockdown'),sep = '-')
 df <- df %>% mutate(knockdown = ifelse(is.na(knockdown),'untreated',knockdown))
 group<-as.factor(df$knockdown)
@@ -28,6 +36,7 @@ design<-model.matrix(~group)
 
 # get the normalized gene expression and aggregate probes into genes
 gex_rma <- exprs(exprs_rma)
+# gex_rma <- gset[["GSE31534_series_matrix.txt.gz"]]@assayData[["exprs"]]
 anno <- AnnotationDbi::select(hgu133a.db,
                               keys = (rownames(gex_rma)),
                               columns = c("SYMBOL"),
