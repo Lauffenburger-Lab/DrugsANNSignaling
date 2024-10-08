@@ -54,7 +54,7 @@ trustedSource = numpy.array(['KEGG',
 
 #trustedReferences = numpy.array(['SIGNOR:31160049', 'SIGNOR:17145764'])
 
-omnipath = pd.read_csv(WholePKN = args.WholePKN, sep='\t', low_memory=False)
+omnipath = pd.read_csv(WholePKN, sep='\t', low_memory=False)
 humanFilter = omnipath['ncbi_tax_id_target'] == species_id
 omnipath = omnipath.loc[humanFilter, :]
 
