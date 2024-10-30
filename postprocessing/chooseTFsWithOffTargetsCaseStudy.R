@@ -26,7 +26,7 @@ annotation <- annotation %>% filter(TF %in% df$TF)
 df <- left_join(df,annotation)
 df <- left_join(df,conditions)
 df <- df %>% filter(!is.na(drug))
-
+xlsx::write.xlsx2(df,'../../results/case_study/A375_ScoredOffTargetsCaseStudies.xlsx')
 interestingTFs = df %>% filter(!is.na(drug))  %>% 
   filter(r>=0.5) %>% 
   filter((delta>0.23 | delta<(-0.23)) & (activity>0.75 | activity<0.25))
