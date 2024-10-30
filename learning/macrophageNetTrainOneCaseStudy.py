@@ -1,17 +1,9 @@
 import torch
 import numpy
 import matplotlib.pyplot as plt
-#import bionetwork as onlybionet
 import bionetworkWithDrugs as bionetwork
-#import bionetwork
 import plotting
 import pandas
-import saveSimulations
-from rdkit.Chem import MACCSkeys
-from rdkit.Chem.AtomPairs import Pairs
-from rdkit.Chem.AtomPairs import Torsions
-from rdkit.Chem import AllChem
-from rdkit import Chem
 import argparse
 import logging
 

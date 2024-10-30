@@ -2,13 +2,6 @@ import torch
 import pandas as pd
 import numpy as np
 import bionetworkWithDrugs as bionetwork
-import torch.nn.functional as F
-from rdkit.Chem import MACCSkeys
-from rdkit.Chem.AtomPairs import Pairs
-from rdkit.Chem.AtomPairs import Torsions
-from rdkit.Chem import AllChem
-from rdkit import Chem
-import scipy
 import argparse
 import logging
 import time

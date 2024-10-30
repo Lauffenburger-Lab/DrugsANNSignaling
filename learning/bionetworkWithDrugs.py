@@ -8,16 +8,9 @@ import numpy.random
 import pandas
 import numpy
 from scipy.sparse.linalg import eigs
-#from scipy.linalg import norm
 from scipy.linalg import eig
-from rdkit.Chem import MACCSkeys
-from rdkit.Chem.AtomPairs import Pairs
-from rdkit.Chem.AtomPairs import Torsions
 from rdkit.Chem import AllChem
 from rdkit import Chem
-
-#import matplotlib.pyplot as plt
-#import seaborn
 
 
 ########Activation function

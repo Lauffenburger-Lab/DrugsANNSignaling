@@ -2,7 +2,6 @@ import torch
 import pandas as pd
 import numpy as np
 import bionetworkWithDrugs as bionetwork
-from matplotlib import pyplot as plt
 import argparse
 import logging
 

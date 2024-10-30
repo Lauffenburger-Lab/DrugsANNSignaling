@@ -2,19 +2,10 @@ import torch
 import pandas as pd
 import numpy as np
 import bionetworkWithDrugs as bionetwork
-import torch.nn.functional as F
-from rdkit.Chem import MACCSkeys
-from rdkit.Chem.AtomPairs import Pairs
-from rdkit.Chem.AtomPairs import Torsions
-from rdkit.Chem import AllChem
-from rdkit import Chem
 from captum.attr import IntegratedGradients
-from captum.attr import LayerConductance
-from captum.attr import NeuronConductance
 import argparse
 import logging
 import time
-from matplotlib import pyplot as plt
 start_time = time.time()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

@@ -1,27 +1,10 @@
-import os
 import torch
 import pandas as pd
 import numpy as np
 import bionetworkWithDrugs as bionetwork
-import torch.nn.functional as F
-from rdkit.Chem import MACCSkeys
-from rdkit.Chem.AtomPairs import Pairs
-from rdkit.Chem.AtomPairs import Torsions
-from rdkit.Chem import AllChem
-from rdkit import Chem
-import scipy
-from sklearn.cluster import KMeans
-from captum.attr import IntegratedGradients
-from captum.attr import LayerConductance
-from captum.attr import NeuronConductance
 from matplotlib import pyplot as plt
-import networkx as nx
-import seaborn as sns
 import argparse
 import logging
-from pathlib import Path
-from operator import itemgetter
-sns.set()
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger()
