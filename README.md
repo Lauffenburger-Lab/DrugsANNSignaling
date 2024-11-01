@@ -54,7 +54,7 @@ The study utilizes multiple resources from the Python and R programming language
 **Important Note:**
 * **This installation has been validated to work in Unix-based, macOS, and WINDOWS operating systems.** 
 * **For a Linux installation there might be needed some manual installation of external dependencies (especially) for tidyverse. Please check libraries' documentation online**
-* **Please note that MAC are not compatible with the GPU components of this installation guide (which are not necessary though!). **
+* **Please note that macOS are not compatible with the GPU components of this installation guide (which are not necessary though!).**
 
 **Python installation**
 ```bash
