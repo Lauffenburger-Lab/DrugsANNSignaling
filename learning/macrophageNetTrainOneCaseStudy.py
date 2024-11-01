@@ -170,6 +170,27 @@ for e in range(e, maxIter):
 
     if e % 50 == 0:
         plotting.printStats(e, stats)
+        ## plot training progress
+        plt.rcParams["figure.figsize"] = (9,6)
+        plt.figure()
+        ### plot training loss
+        T = numpy.array(range(stats['loss'].shape[0]))
+        plotting.shadePlot(T, plotting.movingaverage(stats['loss'], 5), plotting.movingaverage(stats['lossSTD'], 10))
+        plt.plot([0, len(T)], numpy.array([1, 1])*mLoss.item(), 'black', linestyle='--')
+        plt.xlim([0, len(T)])
+        plt.ylim(bottom=1e-3)
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.yscale('log')
+        plt.savefig('training_loss_'+outPattern+'.png',dpi=600)
+        ## plot specral radius convergence
+        plt.figure()
+        plt.plot([0, maxIter], [1, 1], 'black')
+        plt.plot([0, len(T)], spectralCapacity * numpy.array([1, 1]), 'black', linestyle='--')
+        plotting.shadePlot(T, plotting.movingaverage(stats['eig'], 5), plotting.movingaverage(stats['eigSTD'], 5))
+        plt.ylabel('Spectral radius')
+        plt.xlabel('Epoch')
+        plt.savefig('spectral_radius_convergence_'+outPattern+'.png',dpi=600)
 
     if numpy.logical_and(e % 100 == 0, e>0):
         optimizer.state = resetState.copy()

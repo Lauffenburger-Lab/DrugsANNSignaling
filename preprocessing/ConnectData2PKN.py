@@ -4,8 +4,8 @@ import argparse
 
 ### Initialize the parsed arguments
 parser = argparse.ArgumentParser(description='Connect data to PKN')
-parser.add_argument('--pknPath', action='store', help='untrimmed PKN file in .tsv format',default='preprocessed_data/PKN/pkn.tsv')
-parser.add_argument('--DTIpath', action='store',help='untrimmed drug-target interactions in long format saved in .tsv format',default='preprocessed_data/PKN/L1000_lvl3_DT.tsv')
+parser.add_argument('--pknPath', action='store', help='untrimmed PKN file in .tsv format', required=True) #'preprocessed_data/PKN/pkn.tsv'
+parser.add_argument('--DTIpath', action='store',help='untrimmed drug-target interactions in long format saved in .tsv format',required=True) #L1000_lvl3_DT.tsv
 parser.add_argument('--TFpath', action='store', help='untrimmed TF activity file in .tsv format', required=True)
 parser.add_argument('--targetedTFs', help='path to save TFs that are directly targeted by a drug in .tsv format', required=True)
 parser.add_argument('--forced2keep', help='path to save PKN parts to forcefuly keep because it contains targeted TFs', required=True)
