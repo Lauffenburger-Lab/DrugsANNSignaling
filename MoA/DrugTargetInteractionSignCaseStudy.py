@@ -10,11 +10,13 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger()
 print2log = logger.info
 
+## This function resets the gradients of a model
 def resetGradients(model):
     for var in model.parameters():
         var.grad = None
 
-
+## This function infers the binary drug-target interactions based on pre-calculated gradient score thresholds for each drug for each model in the ensemble
+## WITHOUT SAVING THESE RESULTS
 def inferDrugTarget(interactions, global_thresholds, prior_mask, drugInput, drugTargets, model_no,
                     grad_thresholds=list(np.logspace(-3.5, 3.5, num=45)), thresh=0.25):
     global_thresholds = global_thresholds.detach().numpy()
@@ -47,6 +49,9 @@ def inferDrugTarget(interactions, global_thresholds, prior_mask, drugInput, drug
                          right_on=['drug', 'variable'])
     return (merged_df)
 
+## All the following aguments have defaults that correspond to the 
+## case study of extracting a mechanism of action of the off-target effect of
+## Lestaurtinib on FOXM1 through the CDK2 signaling node in A375 cancer cell lines
 parser = argparse.ArgumentParser(prog='Infer sign of interaction')
 parser.add_argument('--inputPattern', action='store', default='l1000_latest_model_modeltype4_a375_case_study')
 parser.add_argument('--ensembles_path', action='store', default='../../results/case_study/')
@@ -87,7 +92,6 @@ inputPath = ensembles_path + 'models/' + inputPattern
 cell = args.cell_line
 
 ### Choose node and drug to investigate
-# interestingSamples = pd.read_csv(ensembles_path+'interestingSamples.csv',index_col=1)
 node = args.node
 node_gene = args.node_gene
 drug = args.drug
@@ -97,14 +101,11 @@ moa_off_target = args.moa_off_target
 # CDK1 = P06493
 # CDK2 = P24941
 # CDK6 = Q00534
-#%%
-### Get drug-target interactions
-# merged_interaction = pd.read_csv(ensembles_path+'InteractionScores/l1000_modeltype4_lamda6_'+cell+'_mergedInteractions_ROC.csv',index_col=0)
-# merged_interaction = merged_interaction[merged_interaction['drug']==drug]
-# merged_interaction = merged_interaction[merged_interaction['Inferred']=='Interaction']
 
 ### Load network
 #Load network
+#### BE CAREFUL!!!!
+#### In networkList the sources and targets are flipped !!!
 networkList, nodeNames, modeOfAction = bionetwork.loadNetwork(PKN)
 annotation = pd.read_csv(PknAnnotation, sep='\t')
 uniprot2gene = dict(zip(annotation['code'], annotation['name']))
@@ -147,11 +148,9 @@ Y = torch.tensor(TFOutput.values, dtype=torch.double)
 dictionary = dict(zip(nodeNames, list(range(len(nodeNames)))))
 node_index_inNet = dictionary[node]
 
-# Get global grad score
-# global_grad_scores = torch.load(ensembles_path+"all_drugs_global_thresholds.pt")
+# Get pre-calculated global grad score thresholds for each drug for each model in the ensemble, that will be used for inferring drug-target interactions
 global_grad_scores = pd.read_csv(ensembles_path+"all_drugs_global_thresholds.csv",index_col=0)
 global_grad_scores = torch.tensor(global_grad_scores.loc[drug,:].values)
-# global_grad_scores = torch.load(ensembles_path+"InteractionScores/global_gradient_scores_"+drug+"_sample_ind"+str(sample_ind[0])+"_all_models.pt")
 
 ### Mapping of names and ids in graph
 map = dict(zip(nodeNames, list(range(len(nodeNames)))))
@@ -171,23 +170,8 @@ for i in range(numberOfModels):#range(1):
     model.eval()
     X = torch.tensor(drugInput.values.copy(), dtype=torch.double)
     
-    # # Get range of input activity for different concetrations of drugs
-    # X_binned =  drug_ratioMatrix * X.unsqueeze(2)
-    # X_binned = X_binned.squeeze()
-    # X_binned = X_binned.T
-    # Xin_binned =  model.drugLayer(X_binned)
-    # Xin_range = torch.abs(torch.max(Xin_binned,0)[0] - torch.min(Xin_binned,0)[0]).unsqueeze(0)
-    
     ### Get drug-target interactions
     interactions = pd.read_csv(ensembles_path + 'InteractionScores/'+interactionScorePattern+'_%s.csv' % i,index_col=0)
-    # drugs = interactions.index.values
-    # target_space = interactions.columns.values
-    # interactions = torch.tensor(interactions.values) * Xin_range
-    # interactions = pd.DataFrame(interactions.detach().numpy())
-    # interactions.index =drugs
-    # interactions = interactions.T
-    # interactions.index = target_space
-    # interactions = interactions.T
     merged_interactions = inferDrugTarget(interactions,global_grad_scores,
                                           model.drugLayer.mask.T.detach(), drugInput,drugTargets,
                                           i)

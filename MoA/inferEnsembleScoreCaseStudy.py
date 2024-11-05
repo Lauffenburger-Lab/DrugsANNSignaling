@@ -16,18 +16,18 @@ logger = logging.getLogger()
 print2log = logger.info
 
 parser = argparse.ArgumentParser(prog='Drug-Targets for drugs of interest')
-parser.add_argument('--ensembles_path', action='store', required=True)
-parser.add_argument('--inputPattern', action='store', required=True)
-parser.add_argument('--numberOfModels', action='store', required=True)
-parser.add_argument('--ConvertToEmpProb', action='store',default=False)
-parser.add_argument('--drugInputFile', action='store',required=True)
-parser.add_argument('--drugTargetsFile', action='store',required=True)
-parser.add_argument('--TFOutFile', action='store',required=True)
-parser.add_argument('--drugSimilarityFile', action='store',required=True)
-parser.add_argument('--interactionsPath', action='store',default=None)
-parser.add_argument('--Y_ALL_path', action='store',default=None)
-parser.add_argument('--Y_ALL_masked_path', action='store',default=None)
-parser.add_argument('--ig_n_steps', action='store', default=10)
+parser.add_argument('--ensembles_path', action='store', required=True,help='Path to the ensembles folder')
+parser.add_argument('--inputPattern', action='store', required=True,help='Input file pattern for trained models')
+parser.add_argument('--numberOfModels', action='store', required=True,help='Number of trained models in the ensemble')
+parser.add_argument('--ConvertToEmpProb', action='store',default=False,help='Should we apply sigmoid-like transformation the TF activity file? (default=False, because it has already applied)')
+parser.add_argument('--drugInputFile', action='store',required=True,help='Model`s Input: Drug concetrations file')
+parser.add_argument('--drugTargetsFile', action='store',required=True,help='File containing drug-target interactions used to train the model')
+parser.add_argument('--TFOutFile', action='store',required=True,help='Model`s Outuput: TF activity file')
+parser.add_argument('--drugSimilarityFile', action='store',required=True,help='Pre-calculated drug similarity matrix used to train the model')
+parser.add_argument('--interactionsPath', action='store',required=True,help='Path to the interaction scores folder')
+parser.add_argument('--Y_ALL_path', action='store',required=True,help='Pytorch .pt file path for predictions of all models')
+parser.add_argument('--Y_ALL_masked_path', action='store',required=True,help='Pytorch .pt file path for predictions when masking interactions for different threshold and models')
+parser.add_argument('--ig_n_steps', action='store', default=10,help='Steps to be used in the integral of the integrated gradients algorithm (default:10 for simple linear models)')
 
 args = parser.parse_args()
 ensembles_path = args.ensembles_path
@@ -78,10 +78,6 @@ drugSim = pd.read_csv(drugSimilarityFile,index_col=0)
 drugSim = drugSim.loc[drugInput.columns.values,drugInput.columns.values]
 drugSim = torch.tensor(drugSim.values.copy(), dtype=torch.double)
 
-#drugInput = drugInput[drugInput.loc[:,'CS(C)=O']==0]
-dmso_ind = np.where(drugInput.columns.values=='CS(C)=O')[0][0]
-#all_drugs = list(drugInput.columns.values)
-
 X = torch.tensor(drugInput.values.copy(), dtype=torch.double)
 Y = torch.tensor(TFOutput.values, dtype=torch.double)
 
@@ -93,9 +89,6 @@ thresholds = list(np.logspace(-3.5, 3.5, num=50))
 Y_ALL = torch.zeros(numberOfModels,Y.shape[0],Y.shape[1])
 Y_ALL_masked = torch.zeros(numberOfModels,len(thresholds),Y.shape[0],Y.shape[1])
 models_times = []
-# Y_ALL = torch.load(Y_ALL_path)
-# Y_ALL_masked = torch.load(Y_ALL_masked_path)
-# all_scores = np.load('all_scores.npy')
 for i in range(numberOfModels):
     prev_time = time.time()
     model = torch.load(inputPath + str(i) + ".pt")

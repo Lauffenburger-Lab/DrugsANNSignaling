@@ -16,6 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger()
 print2log = logger.info
 
+## This function creates a new network list (2D array containing edges) based on the model weights and the old network list, as well as the set of available nodes
 def remakeNetworkList(networkList,model_weights,weight_mask,nodes):
     import numpy as np
     sources = []
@@ -32,13 +33,15 @@ def remakeNetworkList(networkList,model_weights,weight_mask,nodes):
     weights = np.array(weights)
     return networkList_new,weights
 
+## This function resets the gradients of a model
 def resetGradients(model):
     for var in model.parameters():
         var.grad = None
 
-
+## This function infers the binary drug-target interactions based on pre-calculated gradient score thresholds for each drug for each model in the ensemble
+## AND SAVES THESE RESULTS
 def inferDrugTarget(interactions, global_thresholds, prior_mask, drugInput, drugTargets, model_no, save_file_pattern,
-                    grad_thresholds=list(np.logspace(-3.5, 3.5, num=45)), thresh=0.25):
+                    grad_thresholds=list(np.logspace(-3.5, 3.5, num=45))):
     global_thresholds = global_thresholds.detach().numpy()
     scores = torch.abs(torch.tensor(interactions.values))
     grad_thresh = global_thresholds[model_no]
@@ -70,6 +73,7 @@ def inferDrugTarget(interactions, global_thresholds, prior_mask, drugInput, drug
     merged_df.to_csv(save_file_pattern + '_mergedInteractions_%s.csv' % model_no)
     return (merged_df)
 
+## This function finds the shortest path (or all the simplest paths) between two nodes in a netwrok
 def pathFinder(source,target,network,mode='Shortest',max_depth = 5):
     paths = []
     hasPath = nx.has_path(network,source,target)
@@ -79,7 +83,9 @@ def pathFinder(source,target,network,mode='Shortest',max_depth = 5):
         else:
             paths = [p for p in nx.all_simple_paths(network, source, target,max_depth)]
     return paths
-
+## All the following aguments have defaults that correspond to the 
+## case study of extracting a mechanism of action of the off-target effect of
+## Lestaurtinib on FOXM1 in A375 cancer cell lines
 parser = argparse.ArgumentParser(prog='Infer MoA')
 parser.add_argument('--inputPattern', action='store', default='l1000_latest_model_modeltype4_a375_case_study')
 parser.add_argument('--ensembles_path', action='store', default='../../results/case_study/')
@@ -134,9 +140,7 @@ sample = args.sample
 moa_off_target = args.moa_off_target
 #'inhibit'
 
-# deltaTF = interestingSamples.loc[sample,"delta"]
-
-# Make drug directory
+# Make drug directory to save the results
 Path(res_dir+'MoA/'+drug_name).mkdir(parents=True, exist_ok=True)
 Path(res_dir + 'InteractionScores/MergedInteractions/'+drug_name).mkdir(parents=True, exist_ok=True)
 
@@ -145,7 +149,7 @@ Path(res_dir + 'InteractionScores/MergedInteractions/'+drug_name).mkdir(parents=
 #Load network
 networkList, nodeNames, modeOfAction = bionetwork.loadNetwork(PKN)
 #### BE CAREFUL!!!!
-#### In networkList the sources and edges are flipped !!!
+#### In networkList the sources and targets are flipped !!!
 #### So flip them again here!
 networkList = networkList[[1,0],:] # now : 1st row == sources , 2nd row == targets
 annotation = pd.read_csv(PknAnnotation, sep='\t')
@@ -211,11 +215,9 @@ dictionary = dict(zip(nodeNames, list(range(len(nodeNames)))))
 nodeOrder = np.array([dictionary[x] for x in TFOutput.columns])
 TF_index_inNet = nodeOrder[TF_ind]
 
-# Get global grad score
-# global_grad_scores = torch.load(ensembles_path+"all_drugs_global_thresholds.pt")
+# Get pre-calculated global grad score thresholds for each drug for each model in the ensemble, that will be used for inferring drug-target interactions
 global_grad_scores = pd.read_csv(ensembles_path+"all_drugs_global_thresholds.csv",index_col=0)
 global_grad_scores = torch.tensor(global_grad_scores.loc[drug,:].values)
-# global_grad_scores = torch.load(ensembles_path+"InteractionScores/global_gradient_scores_"+drug+"_sample_ind"+str(sample_ind[0])+"_all_models.pt")
 
 #%%
 ### Mapping of names and ids in graph
@@ -226,7 +228,7 @@ df_all_source_types = pd.DataFrame({'type':[],'name':[]})
 df_all_target_types = pd.DataFrame({'type':[],'name':[]})
 mean_bias = np.zeros((len(nodeNames)))
 models_times = []
-for i in range(numberOfModels):#range(1):
+for i in range(numberOfModels):
     prev_time = time.time()
     model = torch.load(inputPath+str(i)+".pt")
     resetGradients(model)
@@ -238,32 +240,16 @@ for i in range(numberOfModels):#range(1):
     Xin =  ratioMatrix.T * Xin.squeeze()
     Xin = Xin.detach()
 
-    # merged_interaction = pd.read_csv(ensembles_path+'InteractionScores/l1000_modeltype4_lamda6_'+Prefix+'_mergedInteractions_ROC.csv',index_col=0)
-    # merged_interaction = merged_interaction[merged_interaction['drug']==drug]
-    # merged_interaction = merged_interaction[merged_interaction['Inferred']=='Interaction']
-
     Yin = model.inputLayer(Xin)
     YhatFull = model.network(Yin)
     Yhat = model.projectionLayer(YhatFull)
     L_objective = torch.sum(Yhat[:,TF_ind])
     L_objective.backward()
     
-    # # Get range of input activity for different concetrations of drugs
-    # X_binned =  drug_ratioMatrix.T * X.squeeze()
-    # Xin_binned =  model.drugLayer(X_binned)
-    # Xin_range = torch.abs(torch.max(Xin_binned,0)[0] - torch.min(Xin_binned,0)[0])
-    
 
     ### Get drug-target interactions
+    ### Load the precalculated drug-target interactions
     interactions = pd.read_csv(ensembles_path + 'InteractionScores/'+interactionScorePattern+'_%s.csv' % i,index_col=0)
-    # drugs = interactions.index.values
-    # target_space = interactions.columns.values
-    # interactions = torch.tensor(interactions.values) * Xin_range
-    # interactions = pd.DataFrame(interactions.detach().numpy())
-    # interactions.index =drugs
-    # interactions = interactions.T
-    # interactions.index = target_space
-    # interactions = interactions.T
     merged_interactions = inferDrugTarget(interactions,global_grad_scores,
                                           model.drugLayer.mask.T.detach(), drugInput,drugTargets,
                                           i,
@@ -292,15 +278,10 @@ for i in range(numberOfModels):#range(1):
     ### calculate variance of YhatFull.
     ### I want to keep nodes with both high variance due to input signal change and high gradient
     Range = torch.abs(torch.max(YhatFull,0)[0] - torch.min(YhatFull,0)[0])
-    #Range = torch.abs(YhatFull[-1,:] - YhatFull[0,:])
     nodeScore = torch.abs(db) * Range
-    #var = YhatFull.var(0)
-    #nodeScore = torch.abs(db) * var
     weightScore = torch.abs(dw) * torch.abs(model.network.weights)
     
     sources = [itemgetter(s)(map) for s in list(drug_target_nodes)]
-    # drug_target_nodes = drug_target_nodes[torch.abs(db[sources]).detach().numpy() >=0.01]
-    # sources = [itemgetter(s)(map) for s in list(drug_target_nodes)]
     target = itemgetter(TF)(map)
     
     total_edges = []
@@ -453,10 +434,6 @@ for i in range(numberOfModels):#range(1):
     keep_source = list(np.array(keep_source)*np.array(keep_source_w))
     drug_target_nodes = drug_target_nodes[keep_source]
     sources = [itemgetter(s)(map) for s in list(drug_target_nodes)]
-    # targets_to_remove = drug_target_nodes[torch.abs(db[sources]).detach().numpy() <0.01]
-    # sources_to_remove = [itemgetter(s)(map) for s in list(targets_to_remove)]
-    # SignalingNet.remove_nodes_from(sources_to_remove)
-    # nodes_all = list(SignalingNet.nodes())
     
     ### Remove nodes not accessed by the drug
     undrugable_nodes = []

@@ -12,17 +12,17 @@ logger = logging.getLogger()
 print2log = logger.info
 
 parser = argparse.ArgumentParser(prog='Drug-Targets for drugs of interest')
-parser.add_argument('--ensembles_path', action='store', required=True)
-parser.add_argument('--inputPattern', action='store', required=True)
-parser.add_argument('--numberOfModels', action='store', required=True)
-parser.add_argument('--ConvertToEmpProb', action='store',default=False)
-parser.add_argument('--drugInputFile', action='store', required=True)
-parser.add_argument('--drugTargetsFile', action='store', required=True)
-parser.add_argument('--TFOutFile', action='store', required=True)
-parser.add_argument('--drugSimilarityFile', action='store', required=True)
-parser.add_argument('--interactionsPath', action='store',default=None)
-parser.add_argument('--Y_ALL_path', action='store',default=None)
-parser.add_argument('--Y_ALL_masked_path', action='store',default=None)
+parser.add_argument('--ensembles_path', action='store', required=True,help='Path to the ensembles folder')
+parser.add_argument('--inputPattern', action='store', required=True,help='Input file pattern for trained models')
+parser.add_argument('--numberOfModels', action='store', required=True,help='Number of trained models in the ensemble')
+parser.add_argument('--ConvertToEmpProb', action='store',default=False,help='Should we apply sigmoid-like transformation the TF activity file? (default=False, because it has already applied)')
+parser.add_argument('--drugInputFile', action='store', required=True,help='Model`s Input: Drug concetrations file')
+parser.add_argument('--drugTargetsFile', action='store', required=True,help='File containing drug-target interactions used to train the model')
+parser.add_argument('--TFOutFile', action='store', required=True,help='Model`s Outuput: TF activity file')
+parser.add_argument('--drugSimilarityFile', action='store', required=True,help='Pre-calculated drug similarity matrix')
+parser.add_argument('--interactionsPath', action='store',required=True,help='Path to the interaction scores folder')
+parser.add_argument('--Y_ALL_path', action='store',required=True,help='Pytorch .pt file path for predictions of all models')
+parser.add_argument('--Y_ALL_masked_path', action='store',required=True,help='Pytorch .pt file path for predictions when masking interactions for different threshold and models')
 
 args = parser.parse_args()
 ensembles_path = args.ensembles_path
@@ -72,10 +72,6 @@ drugSim = pd.read_csv(drugSimilarityFile,index_col=0)
 drugSim = drugSim.loc[drugInput.columns.values,drugInput.columns.values]
 drugSim = torch.tensor(drugSim.values.copy(), dtype=torch.double)
 
-#drugInput = drugInput[drugInput.loc[:,'CS(C)=O']==0]
-dmso_ind = np.where(drugInput.columns.values=='CS(C)=O')[0][0]
-#all_drugs = list(drugInput.columns.values)
-
 X = torch.tensor(drugInput.values.copy(), dtype=torch.double)
 Y = torch.tensor(TFOutput.values, dtype=torch.double)
 
@@ -97,10 +93,14 @@ for i in range(numberOfModels):
     Yin = model.inputLayer(Xin)
 
     print2log('Begin score calculation with linear algebra for model %s'%i)
+    # Get drug-drug scaled similarity matrix
     W = torch.mul(model.drugLayer.drugSim, model.drugLayer.Wsim)
+    # Get masked drug-target interaction matrix
     A = torch.mul(model.drugLayer.A, model.drugLayer.mask)
+    # Get weights from the batch normalization layers
     kappa = model.drugLayer.bn.weight / torch.sqrt(model.drugLayer.bn.running_var + model.drugLayer.bn.eps)
     K = kappa
+    # Do the multiplication to get one drug-target interaction score matrix (for this linear layer it is the same as using the integrated gradients)
     scores = torch.mm(A, (kappa * W).T)
     scores = scores.T.detach()
 
@@ -109,13 +109,6 @@ for i in range(numberOfModels):
     interactions.columns = drugTargets.columns
     interactions.to_csv(interactionsPath +'interactionScores_'+str(i)+'.csv')
     #interactions = pd.read_csv(outPattern+'_interactionScores_'+str(i)+'.csv',index_col=0)
-
-    # ## alternative
-    # scores_2 = model.drugLayer(torch.eye(X.shape[1]).double())
-    # interactions_2 = pd.DataFrame(scores_2.detach().numpy())
-    # interactions_2.index = drugInput.columns
-    # interactions_2.columns = drugTargets.columns
-    # interactions_2.to_csv(interactionsPath + 'interactionScores_v2_' + str(i) + '.csv')
 
     scores = torch.abs(scores).detach()
     for j in range(len(thresholds)):

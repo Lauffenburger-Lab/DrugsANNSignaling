@@ -20,15 +20,7 @@ RLFull = args.RLFull
 RL = args.RL
 WholePKN = args.WholePKN
 
-def contains(haystack, needles):
-    result = numpy.full(len(haystack), False, dtype=bool)
-    for curNeedle in needles:
-        result = numpy.logical_or(result, [curNeedle in x for x in haystack])
-    return result
-
-
-
-# species = 9606
+# Interaction sources to be kept
 trustedSource = numpy.array(['KEGG',
               'InnateDB',
               'Ramilowski2015',
@@ -40,7 +32,7 @@ trustedSource = numpy.array(['KEGG',
               ])
 
 
-
+# Load omnipath and keep only species of interest
 omnipath = pd.read_csv(WholePKN, sep='\t', low_memory=False)
 humanFilter = omnipath['ncbi_tax_id_target'] == species
 omnipath = omnipath.loc[humanFilter, :]
@@ -73,7 +65,7 @@ omnipath = omnipath.loc[referenceFilter==False, :]
 paradox = numpy.logical_and(omnipath['stimulation'].values==1, omnipath['inhibition'].values==1)
 omnipath.loc[paradox, ['stimulation', 'inhibition']] = 0
 
-#Add interactions
+#Add interactions manually
 currationAdd = pd.read_csv(add, sep='\t', low_memory=False)
 for i in range(currationAdd.shape[0]):
     curSource = currationAdd.iloc[i,:]['source']
@@ -86,7 +78,7 @@ for i in range(currationAdd.shape[0]):
         omnipath.loc[inList,'sources'] = omnipath.loc[inList,'sources'] + ';' + currationAdd.iloc[i,:]['sources']
         omnipath.loc[inList,'references'] = omnipath.loc[inList,'references'] + ';' + currationAdd.iloc[i,:]['references']
 
-#Remove interactions
+#Remove interactions manually
 currationRemove = pd.read_csv(remove, sep='\t', low_memory=False)
 for i in range(currationRemove.shape[0]):
     curSource = currationRemove.iloc[i,:]['source']
@@ -98,7 +90,7 @@ for i in range(currationRemove.shape[0]):
         print('No match for remove', currationRemove.iloc[i,:])
 
 
-#Edit interactions
+#Edit interactions manually
 currationEdit = pd.read_csv(edit, sep='\t', low_memory=False)
 for i in range(currationEdit.shape[0]):
     curSource = currationEdit.iloc[i,:]['source']
@@ -133,20 +125,14 @@ revOmni = revOmni.rename(columns={'source': 'target', 'target': 'source'})
 omnipath = pd.concat([omnipath.copy(), revOmni])
 omnipath['direction'] = 1
 
-
+# Save all receptor-ligand interactions
 omnipath.to_csv(RLFull, sep='\t', index=False)
-
-#Only directed interactions
-#directed = omnipath['direction'] == 1
-#omnipath =  omnipath.loc[directed, :]
 
 #Keep only trusted sources
 pknFilter = numpy.full(omnipath.shape[0], False, dtype=bool)
 for i in range(len(pknFilter)):
     pknFilter[i] = len(numpy.intersect1d(omnipath.iloc[i,:]['sources'].split(';'), trustedSource))>0
 omnipath =  omnipath.loc[pknFilter, :]
-
-
-
+# Save all receptor-ligand interactions that are in specific sources
 omnipath.to_csv(RL, sep='\t', index=False)
 

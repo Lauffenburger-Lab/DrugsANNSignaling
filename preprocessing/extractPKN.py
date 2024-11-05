@@ -22,12 +22,7 @@ pknUniprot = args.pknUniprot
 RLinteractions = args.RLinteractions
 WholePKN = args.WholePKN
 
-def contains(haystack, needles):
-    result = numpy.full(len(haystack), False, dtype=bool)
-    for curNeedle in needles:
-        result = numpy.logical_or(result, [curNeedle in x for x in haystack])
-    return result
-
+## Function to be used to merge duplicate interactions (with potential disagreemnt about the sign of the interaction)
 def mergeContent(df):
     A = df.iloc[0,:]
     B = df.iloc[1,:]
@@ -40,8 +35,7 @@ def mergeContent(df):
     result['references']  = ';'.join(mergedReferences)
     return result
 
-
-# human = 9606
+# Interaction sources to be kept
 trustedSource = numpy.array(['KEGG',
              'Macrophage',
              'InnateDB',
@@ -52,8 +46,7 @@ trustedSource = numpy.array(['KEGG',
              'HuGeSiM' #manual curation will be marked with this id
              ])
 
-#trustedReferences = numpy.array(['SIGNOR:31160049', 'SIGNOR:17145764'])
-
+# Load omnipath and keep only species of interest
 omnipath = pd.read_csv(WholePKN, sep='\t', low_memory=False)
 humanFilter = omnipath['ncbi_tax_id_target'] == species_id
 omnipath = omnipath.loc[humanFilter, :]
@@ -61,10 +54,6 @@ omnipath = omnipath.loc[humanFilter, :]
 #Only in omnipath
 omnipathFilter = omnipath['omnipath'].values
 omnipath =  omnipath.loc[omnipathFilter, :]
-
-#Do not include ligand-receptor interactions here
-#LRFilter = omnipath['ligrecextra'].values == False
-#omnipath =  omnipath.loc[LRFilter, :]
 
 #Subset to relevant info
 relevantInformation = ['source', 'target', 'consensus_direction',  'consensus_stimulation', 'consensus_inhibition', 'sources', 'references']
@@ -153,16 +142,6 @@ omnipath[['direction', 'stimulation', 'inhibition']] = omnipath[['direction', 's
 #Store full network
 omnipath.to_csv(pknFull, sep='\t', index=False)
 
-#Keep only trusted sources or references
-# pknFilter = numpy.full(omnipath.shape[0], False, dtype=bool)
-# for i in range(len(pknFilter)):
-#     S = len(numpy.intersect1d(omnipath.iloc[i,:]['sources'].split(';'), trustedSource))>0
-#     #R = len(numpy.intersect1d(omnipath.iloc[i,:]['references'].split(';'), trustedReferences))>0
-#     pknFilter[i] = S
-#     #pknFilter[i] = numpy.logical_or(S, R)
-
-# omnipath =  omnipath.loc[pknFilter, :]
-
 #Keep only trusted sources
 pknFilter = numpy.full(omnipath.shape[0], False, dtype=bool)
 confidenceValues = numpy.unique(omnipath.loc[:, 'sources'])
@@ -189,7 +168,7 @@ uniprot = pd.read_csv('../data/uniprot-reviewed_yes+AND+organism__Homo+sapiens+(
 uniprot = uniprot['Entry'].values
 uniprotFilter = numpy.logical_and(numpy.isin(omnipath['source'].values, uniprot), numpy.isin(omnipath['target'].values, uniprot))
 omnipath = omnipath.loc[uniprotFilter, :]
-
+# Store uniprot network
 omnipath.to_csv(pknUniprot, sep='\t', index=False)
 
 
