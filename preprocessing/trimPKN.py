@@ -6,9 +6,6 @@ import argparse
 ### Initialize the parsed arguments
 parser = argparse.ArgumentParser(description='Trim PKN, DTIs and TFs')
 parser.add_argument('coreSources', metavar='N', type=str, nargs='*', help='core sources list',default=['KEGG', 'InnateDB','SIGNOR'])
-parser.add_argument('--add_curation', action='store',help='interactions to manually add',default='preprocessed_data/PKN/add.tsv')
-parser.add_argument('--remove_curation', action='store',help='interactions to manually remove',default='preprocessed_data/PKN/remove.tsv')
-parser.add_argument('--edit_curation', action='store',help='interactions to manually edit',default='preprocessed_data/PKN/edit.tsv')
 parser.add_argument('--pknUniprot', help='all kept interactions with uniptor ids in .tsv format', default = 'preprocessed_data/PKN/pkn.tsv')
 parser.add_argument('--DTIpath', action='store',help='untrimmed drug-target interactions in long format saved in .tsv format', required=True) # preprocessed_data/PKN/L1000_lvl3_DT.tsv
 parser.add_argument('--targetedTFs', help='path to load TFs that are directly targeted by a drug in .tsv format', required=True)
@@ -18,9 +15,6 @@ parser.add_argument('--TrimmedTFpath', action='store', help='final trimmed TF ac
 parser.add_argument('--FinalPKN', action='store', help='Final, trimmed PKN file in .tsv format', required=True)
 parser.add_argument('--FinalPKNAnnotation', action='store', help='Final, trimmed annotation file for the PKN in .tsv format', required=True)
 args = parser.parse_args()
-add_curation = args.add_curation
-remove_curation = args.remove_curation
-edit_curation = args.edit_curation
 pknUniprot = args.pknUniprot
 DTIpath = args.DTIpath
 TFpath = args.TFpath

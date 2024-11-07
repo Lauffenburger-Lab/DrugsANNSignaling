@@ -84,16 +84,16 @@ drugSim = torch.tensor(drugSim.values.copy(), dtype=torch.double)
 
 X = torch.tensor(drugInput.values.copy(), dtype=torch.double)
 Y = torch.tensor(TFOutput.values, dtype=torch.double)
-Υ_ALL = torch.zeros(numberOfModels,Y.shape[0],Y.shape[1])
-Υ_ALL_masked_1 = torch.zeros(numberOfModels,Y.shape[0],Y.shape[1])
-Υ_ALL_masked_2 = torch.zeros(numberOfModels,Y.shape[0],Y.shape[1])
+Y_ALL = torch.zeros(numberOfModels,Y.shape[0],Y.shape[1])
+Y_ALL_masked_1 = torch.zeros(numberOfModels,Y.shape[0],Y.shape[1])
+Y_ALL_masked_2 = torch.zeros(numberOfModels,Y.shape[0],Y.shape[1])
 model_times = []
 for i in range(numberOfModels):
     prev_time = time.time()
     model = torch.load(inputPathPattern+str(i)+".pt")
     model.eval()
     Yhat, YhatFull = model(X)
-    Υ_ALL[i,:,:] = Yhat.detach()
+    Y_ALL[i,:,:] = Yhat.detach()
     mask = torch.mm(1.0*(X!=0).double(),model.drugLayer.mask.T)
 
     Xin = model.drugLayer(X)
@@ -102,14 +102,14 @@ for i in range(numberOfModels):
     fullX_masked = model.inputLayer(Xin_masked)
     YhatFull_masked = model.network(fullX_masked)
     Yhat_masked_1 = model.projectionLayer(YhatFull_masked)
-    Υ_ALL_masked_1[i, :, :] = Yhat_masked_1.detach()
+    Y_ALL_masked_1[i, :, :] = Yhat_masked_1.detach()
     print2log('Finished model %s'%i)
     model_times.append(time.time()-prev_time)
 
 print2log('Average time per model = %s seconds'%np.mean(model_times))
 # Calculate mean predictions
-Yhat = torch.mean(Υ_ALL,0)
-Yhat_masked = torch.mean(Υ_ALL_masked_1,0)
+Yhat = torch.mean(Y_ALL,0)
+Yhat_masked = torch.mean(Y_ALL_masked_1,0)
 
 # Per TF performance in the cell line of interest
 performance = pearson_r(Y.detach(), Yhat.detach()).detach().numpy()
