@@ -5,10 +5,41 @@ import matplotlib.pyplot as plt
 import bionetworkWithDrugs as bionetwork
 import pandas
 import logging
+import argparse
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger()
 print2log = logger.info
+
+parser = argparse.ArgumentParser(prog='Cell-line-specific training evaluation')
+parser.add_argument('--ensembles_path', action='store', required=True,help='Path to the ensembles folder')
+parser.add_argument('--inputPattern', action='store', required=True,help='Input file pattern for trained models')
+parser.add_argument('--numberOfModels', action='store', default=50,help='Number of trained models in the ensemble')
+parser.add_argument('--ConvertToEmpProb', action='store',default=False,help='Should we apply sigmoid-like transformation the TF activity file? (default=False, because it has already applied)')
+parser.add_argument('--drugInputFile', action='store',required=True,help='Model`s Input: Drug concetrations file')
+parser.add_argument('--drugTargetsFile', action='store',required=True,help='File containing drug-target interactions used to train the model')
+parser.add_argument('--TFOutFile', action='store',required=True,help='Model`s Outuput: TF activity file')
+parser.add_argument('--drugSimilarityFile', action='store',required=True,help='Pre-calculated drug similarity matrix used to train the model')
+parser.add_argument('--PKN', action='store', required=True,help='PKN file')
+parser.add_argument('--PknAnnotation', action='store', required=True,help='PKN annotation file')
+parser.add_argument('--res_dir', action='store', required=True,help='Results directory to save results')
+parser.add_argument('--CellPrefix', action='store', required=True,help='Prefix for saving the files (the cell line name e.g. A375)')
+args = parser.parse_args()
+ConvertToEmpProb = args.ConvertToEmpProb
+if type(ConvertToEmpProb) == str :
+    ConvertToEmpProb = eval(ConvertToEmpProb)
+no_models = args.numberOfModels
+ensembles_path = args.ensembles_path
+inputPattern = args.inputPattern
+inputPath = ensembles_path + inputPattern
+drugInputFile = args.drugInputFile
+drugTargetsFile = args.drugTargetsFile
+TFOutFile = args.TFOutFile
+drugSimilarityFile = args.drugSimilarityFile
+PknAnnotation = args.PknAnnotation
+PKN = args.PKN
+res_dir = args.res_dir
+CellPrefix = args.CellPrefix
 
 def Rsquared(y_pred,y_true):
     SS_res = torch.sum((y_true - y_pred) ** 2,0)
@@ -36,34 +67,18 @@ def lineOfIdentity():
     plt.plot([minLevel, maxLevel], [minLevel, maxLevel], 'black', label='_nolegend_')
 
 
-inputAmplitude = 3
-projectionAmplitude = 1.2
-ConvertToEmpProb = False
-
-#Setup optimizer
-batchSize = 25
-MoAFactor = 0.1
-spectralFactor = 1e-3
-maxIter = 5000
-noiseLevel = 10
-L2 = 1e-6
-
-no_models = 50
-
-
 #Load network
-networkList, nodeNames, modeOfAction = bionetwork.loadNetwork('../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Model.tsv')
-annotation = pandas.read_csv('../preprocessing/preprocessed_data/PKN/l1000_lvl3_withsignor-Annotation.tsv', sep='\t')
+networkList, nodeNames, modeOfAction = bionetwork.loadNetwork(PKN)
+annotation = pandas.read_csv(PknAnnotation, sep='\t')
 uniprot2gene = dict(zip(annotation['code'], annotation['name']))
 bionetParams = bionetwork.trainingParameters(iterations = 120, clipping=1, targetPrecision=1e-6, leak=0.01)
 spectralCapacity = numpy.exp(numpy.log(1e-2)/bionetParams['iterations'])
 
 ### Load all data
-drugInput = pandas.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_A375-conditions_drugs.tsv', 
-                            sep='\t', low_memory=False,index_col=0)
+drugInput = pandas.read_csv(drugInputFile, sep='\t', low_memory=False,index_col=0)
 drugSmiles = drugInput.columns.values
-drugTargets = pandas.read_csv('../preprocessing/preprocessed_data/TrainingValidationData/L1000_lvl3_A375-drugs_targets.tsv', sep='\t', low_memory=False, index_col=0)
-TFOutput = pandas.read_csv('../preprocessing/preprocessed_data/TF_activities/TrimmedFinal_l1000_allgenes_lvl3_tfs.tsv', sep='\t', low_memory=False, index_col=0)
+drugTargets = pandas.read_csv(drugTargetsFile, sep='\t', low_memory=False, index_col=0)
+TFOutput = pandas.read_csv(TFOutFile, sep='\t', low_memory=False, index_col=0)
 TFOutput = TFOutput.loc[drugInput.index, :]
 train_pear = numpy.zeros((no_models,TFOutput.shape[1]))
 Y_ALL_TRAIN = torch.zeros((no_models,TFOutput.shape[0],TFOutput.shape[1]))
@@ -84,7 +99,7 @@ if ConvertToEmpProb==True:
     TFOutput = 1/(1+numpy.exp(-TFOutput))
 
 drugTargets = drugTargets.loc[drugInput.columns.values,:]
-drugSim = pandas.read_csv('../preprocessing/preprocessed_data/ChemicalSims/lvl3_similarities_A375.csv',index_col=0)
+drugSim = pandas.read_csv(drugSimilarityFile,index_col=0)
 drugSim = drugSim.loc[drugInput.columns.values,drugInput.columns.values]
 drugSim = torch.tensor(drugSim.values.copy(), dtype=torch.double)
 
@@ -92,8 +107,8 @@ X = torch.tensor(drugInput.values.copy(), dtype=torch.double)
 Y = torch.tensor(TFOutput.values, dtype=torch.double)
     
 for i in range(no_models):
-    # Here we load the pre-trained drug layer, which was trained on VCAP data
-    model = torch.load('../../results/case_study/models/l1000_latest_model_modeltype4_a375_case_study%s.pt'%i)
+    # Here we load the pre-trained drug layer, which was trained on cell-line data
+    model = torch.load(inputPath+str(i)+".pt")
     model.eval()
 
     Yhat, YhatFull = model(X)
@@ -105,9 +120,9 @@ for i in range(no_models):
 train_pear = pandas.DataFrame(train_pear)
 train_pear.columns = TFOutput.columns
 train_pear.index = ['model_ '+str(ind) for ind in range(no_models)]
-train_pear.to_csv('../../results/case_study/performance/trainPerformance_A375_modeltype4_perTF.csv')
+train_pear.to_csv(res_dir+CellPrefix+'trainPerformance_perTF.csv')
 
-torch.save(Y_ALL_TRAIN,'../../results/case_study/Y_A375_train.pt')
+torch.save(Y_ALL_TRAIN,res_dir+'Y_'+CellPrefix+'_ensemble_train.pt')
 
 Y_MEAN_TRAIN = torch.mean(Y_ALL_TRAIN, 0)
 Y_STD_TRAIN = torch.std(Y_ALL_TRAIN, 0)
@@ -117,16 +132,16 @@ dist = beta(Y_MEAN_TRAIN.shape[0] / 2 - 1, Y_MEAN_TRAIN.shape[0] / 2 - 1, loc=-1
 pvaluesTrain = [2 * dist.cdf(-abs(r)) for r in list(pearTrain)]
 pearTrain = pandas.DataFrame(pearTrain)
 pearTrain.index = TFOutput.columns
-pearTrain.to_csv('../../results/case_study/performance/trainEnsemblePerformance_A375.csv')
+pearTrain.to_csv(res_dir+CellPrefix+'_trainEnsemblePerformance.csv')
 pvaluesTrain = pandas.DataFrame(numpy.array(pvaluesTrain))
 pvaluesTrain.index = TFOutput.columns
-pvaluesTrain.to_csv('../../results/case_study/performance/trainEnsemblePvalues_A375.csv')
+pvaluesTrain.to_csv(res_dir+CellPrefix+'_trainEnsemblePvalues.csv')
 
 Y_MEAN_TRAIN = pandas.DataFrame(Y_MEAN_TRAIN.detach().numpy())
 Y_MEAN_TRAIN.index = TFOutput.index
 Y_MEAN_TRAIN.columns = TFOutput.columns
-Y_MEAN_TRAIN.to_csv('../../results/case_study/Y_A375_mean_train.csv')
+Y_MEAN_TRAIN.to_csv(res_dir+'Y_'+CellPrefix+'_mean_train.csv')
 Y_STD_TRAIN = pandas.DataFrame(Y_STD_TRAIN.detach().numpy())
 Y_STD_TRAIN.index = TFOutput.index
 Y_STD_TRAIN.columns = TFOutput.columns
-Y_STD_TRAIN.to_csv('../../results/case_study/Y_A375_std_train.csv')
+Y_STD_TRAIN.to_csv(res_dir+'Y_'+CellPrefix+'_std_train.csv')
