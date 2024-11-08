@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/678252886.svg)](https://doi.org/10.5281/zenodo.14057134)
 # Inferring Off-Target effects of drugs on cellular signaling using Interactome-Based deep learning
 Github repository of the study:
 > Inferring Off-Target effects of drugs on cellular signaling using Interactome-Based deep learning <br>
