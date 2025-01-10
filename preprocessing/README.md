@@ -8,7 +8,7 @@
 7. trimPKN.py: Script to trim the prior knowledge network (PKN).
 
 ## Scripts to be used (**with appropriate input arguments**) in a user case study:
-1. inferTFactivityCaseStudy.py: Run this to infer TF activity for some samples for your own case study.
+1. inferTFactivityCaseStudy.R: Run this to infer TF activity for some samples for your own case study.
 2. PreprocessTFactivityCaseStudy.R: Run this (optionally) to pre-process and remove samples and TFs of bad quality.
 3. extractRL.py: Script to extract receptor-ligand (RL) interactions.
 4. extractPKN.py: Script to extract prior knowledge network (PKN) of protein-protein interactions.
